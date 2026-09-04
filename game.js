@@ -172,13 +172,15 @@ function defaultState() {
     collection: {}, newColl: {},
     achievements: {},
     autosell: {}, autoEquip: true,
-    opts: { numbers: true, toasts: true },
+    opts: { numbers: true, toasts: true, sound: { sfx: 0.6, music: 0.35, muted: false } },
     stats: { kills: 0, bosses: 0, goldEarned: 0, itemsFound: 0, itemsSold: 0, prestiges: 0, maxLevel: 1, maxZone: 1, playtime: 0, deaths: 0, bestRarity: -1 },
     lastSave: Date.now(),
   };
 }
 let S = defaultState();
 let quiet = false; // suppress toasts during away-time simulation
+const snd = (name, arg) => { if (!quiet && window.ToyAudio) window.ToyAudio.sfx(name, arg); };
+function syncAudio() { if (window.ToyAudio) { window.ToyAudio.setOptions(S.opts.sound); window.ToyAudio.setZone(S.zone); } }
 
 /* ----------------------------- derived ----------------------------- */
 const xpNeeded = (lvl) => Math.floor(20 * Math.pow(lvl, 1.55));
@@ -282,6 +284,8 @@ function spawnMonster() {
   const base = zoneMonsterStats(zi, boss ? KILLS_PER_BOSS : S.zoneKills, boss);
   M = { name: def[0], icon: def[1], boss, hp: base.hp, maxHp: base.hp, atk: base.atk, gold: base.gold, xp: base.xp, interval: base.interval, mIdx: z.monsters.indexOf(def) };
   monAtkTimer = -0.6; // small grace period
+  if (window.ToyAudio) window.ToyAudio.setBoss(boss);
+  if (boss) snd('boss');
   const sp = $('monster-sprite');
   sp.className = 'sprite' + (boss ? ' boss' : '');
   sp.textContent = M.icon;
@@ -321,6 +325,7 @@ function tick(dt) {
     const dmg = Math.max(1, Math.round(ST.atk * rand(0.9, 1.1) * (crit ? ST.critMult : 1)));
     M.hp -= dmg;
     fxDamage('monster', dmg, crit ? 'crit' : '');
+    snd(crit ? 'crit' : 'hit');
     flash('hero-sprite', 'lunge'); flash('monster-sprite', 'hit');
     if (M.hp <= 0) { onKill(); }
   }
@@ -333,6 +338,7 @@ function tick(dt) {
     const dmg = Math.max(1, Math.round(raw * 100 / (100 + ST.def)));
     S.heroHp -= dmg / maxHp;
     fxDamage('hero', dmg, 'hurt');
+    snd('hurt');
     flash('hero-sprite', 'hit');
     if (S.heroHp <= 0) onHeroDown();
   }
@@ -342,6 +348,7 @@ function onHeroDown() {
   S.heroHp = 0;
   S.stats.deaths++;
   napTimer = 6;
+  snd('nap');
   $('nap-overlay').classList.remove('hidden');
   log(`💤 <span class="bad">${esc(M.name)} knocked ${esc(heroName())} over!</span> Nap time… boss progress in this zone resets.`, 'bad');
   S.zoneKills = 0;
@@ -360,6 +367,7 @@ function onKill() {
   const gold = Math.max(1, Math.round(m.gold * rand(0.8, 1.2) * (1 + ST.gold / 100)));
   S.gold += gold; S.stats.goldEarned += gold;
   fxCoins(Math.min(6, 1 + Math.floor(Math.log10(gold))));
+  snd('kill'); snd('coin');
   // xp
   addXp(Math.round(m.xp * (1 + ST.xp / 100)));
   // heal
@@ -408,6 +416,7 @@ function addXp(amount) {
     ST = computeStats();
     S.heroHp = 1;
     fxDamage('hero', 'LEVEL UP!', 'heal');
+    snd('levelup');
     log(`🎉 <span class="good">Level up! ${esc(heroName())} is now level ${S.level}.</span>`);
     toast('🎉', `Level ${S.level}!`, 'Stats increased, HP restored', 'rc-uncommon');
     ui.heroDirty = true;
@@ -420,6 +429,7 @@ function receiveItem(it) {
   if (it.rarity > S.stats.bestRarity) S.stats.bestRarity = it.rarity;
   const R = RARITIES[it.rarity];
   const cls = 'r-' + R.id;
+  snd(it.rarity >= 1 ? 'loot' : 'pickup', it.rarity);
   if (it.rarity >= 3) toast(it.icon, it.name, `${R.name} ${SLOT_LABEL[it.slot]} · Lv ${it.ilvl}`, 'rc-' + R.id, it.rarity >= 4);
   // auto-equip
   if (S.autoEquip && itemScore(it) > itemScore(S.equipment[it.slot])) {
@@ -452,6 +462,7 @@ function sellItem(it, fromBag, auto) {
     S.inventory.splice(i, 1);
   }
   S.gold += it.sell; S.stats.goldEarned += it.sell; S.stats.itemsSold++;
+  if (!auto) snd('sell');
   if (!auto) log(`🏷️ Sold <span class="r-${RARITIES[it.rarity].id}">${esc(it.name)}</span> for 🪙${fmt(it.sell)}.`);
   ui.bagDirty = true;
 }
@@ -464,6 +475,7 @@ function equipFromBag(it) {
   if (old) S.inventory.push(old);
   ST = computeStats();
   S.heroHp = Math.min(1, S.heroHp);
+  snd('equip');
   log(`🧷 Equipped <span class="r-${RARITIES[it.rarity].id}">${esc(it.name)}</span>.`);
   ui.bagDirty = ui.heroDirty = true;
 }
@@ -500,15 +512,18 @@ function receiveCollectable(c) {
   S.collection[c.id] = (S.collection[c.id] || 0) + 1;
   if (isNew) {
     S.newColl[c.id] = 1;
+    snd('newToy');
     log(`🧸 <span class="r-${R.id}">NEW toy: ${esc(c.name)}</span> added to your Toy Box!`);
     toast(c.icon, `New toy: ${c.name}`, `${R.name} · ${SETS.find(s => s.id === c.set).name}`, 'rc-' + R.id, c.rarity >= 3);
     const set = SETS.find(s => s.id === c.set);
     if (set.items.every(it => S.collection[it.id])) {
       log(`🏆 <span class="good">Set complete: ${esc(set.name)}! +4% attack and HP.</span>`);
       toast('🏆', `Set complete: ${set.name}!`, '+4% attack & HP forever', 'rc-legendary', true);
+      snd('setComplete');
     }
     ST = computeStats();
   } else {
+    snd('toy');
     log(`🧸 Found another <span class="r-${R.id}">${esc(c.name)}</span> (×${S.collection[c.id]}).`);
   }
   ui.collDirty = true;
@@ -521,8 +536,9 @@ function buyUpgrade(id) {
   const lvl = upgLvl(id);
   if (lvl >= u.max) return;
   const cost = upgCost(u, lvl);
-  if (S.gold < cost) return;
+  if (S.gold < cost) { snd('deny'); return; }
   S.gold -= cost;
+  snd('buy');
   S.upgrades[id] = lvl + 1;
   ST = computeStats();
   log(`🔧 Bought ${u.icon} ${esc(u.name)} level ${lvl + 1}.`);
@@ -545,6 +561,7 @@ function doPrestige() {
   M = null; napTimer = 0; spawnDelay = 0.3;
   $('nap-overlay').classList.add('hidden');
   log(`🧹 <span class="good">Tidied up! Earned ${gain} ⭐. Everything is +${S.stars * 5}% stronger now.</span>`);
+  snd('prestige'); syncAudio();
   toast('⭐', `+${gain} Gold Stars!`, `Total ${S.stars} · +${S.stars * 5}% to everything`, 'rc-mythic', true);
   ui.all();
   checkAchievements();
@@ -561,6 +578,7 @@ function checkAchievements() {
       changed = true;
       log(`🏅 <span class="good">Achievement: ${a.icon} ${esc(a.name)}</span> — ${esc(a.desc)}. +1% to everything!`);
       toast(a.icon, `Achievement: ${a.name}`, a.desc + ' · +1% everything', 'rc-epic', true);
+      snd('achievement');
     }
   }
   if (changed) { ST = computeStats(); ui.achDirty = ui.heroDirty = true; }
@@ -634,10 +652,11 @@ function load() {
   } catch (e) { console.warn('Load failed', e); return false; }
 }
 function applyLoaded(data) {
-  const d = defaultState();
-  S = Object.assign(d, data);
-  S.stats = Object.assign(d.stats, data.stats || {});
-  S.opts = Object.assign(d.opts, data.opts || {});
+  const def = defaultState();
+  S = Object.assign(defaultState(), data);
+  S.stats = Object.assign(def.stats, data.stats || {});
+  S.opts = Object.assign(def.opts, data.opts || {});
+  S.opts.sound = Object.assign(def.opts.sound, (data.opts && data.opts.sound) || {});
   S.upgrades = data.upgrades || {}; S.collection = data.collection || {}; S.newColl = data.newColl || {};
   S.achievements = data.achievements || {}; S.autosell = data.autosell || {}; S.equipment = data.equipment || {};
   S.inventory = Array.isArray(data.inventory) ? data.inventory : [];
@@ -646,6 +665,7 @@ function applyLoaded(data) {
   if (!(S.heroHp > 0)) S.heroHp = 1;
   S.v = SAVE_VERSION;
   ST = computeStats();
+  syncAudio();
 }
 function exportSave() {
   save();
@@ -672,7 +692,7 @@ function hardReset() {
   if (!confirm('Delete ALL progress, including your Toy Box collection and stars? This cannot be undone.')) return;
   if (!confirm('Really really sure?')) return;
   localStorage.removeItem(SAVE_KEY);
-  S = defaultState(); ST = computeStats();
+  S = defaultState(); ST = computeStats(); syncAudio();
   M = null; napTimer = 0; spawnDelay = 0.2;
   $('nap-overlay').classList.add('hidden');
   $('log').innerHTML = '';
@@ -758,6 +778,12 @@ function renderStatic() {
   $('auto-equip').checked = S.autoEquip;
   $('opt-numbers').checked = S.opts.numbers;
   $('opt-toasts').checked = S.opts.toasts;
+  const snd0 = S.opts.sound;
+  $('vol-sfx').value = Math.round(snd0.sfx * 100); $('vol-sfx-val').textContent = Math.round(snd0.sfx * 100) + '%';
+  $('vol-music').value = Math.round(snd0.music * 100); $('vol-music-val').textContent = Math.round(snd0.music * 100) + '%';
+  $('opt-muted').checked = snd0.muted;
+  $('mute-ico').textContent = snd0.muted ? '🔇' : '🔊';
+  $('sound-hint').classList.toggle('hidden', snd0.muted || (window.ToyAudio && window.ToyAudio.isUnlocked()));
   document.querySelectorAll('[data-autosell]').forEach(cb => { cb.checked = !!S.autosell[cb.dataset.autosell]; });
   $('res-toys-max').textContent = COLLECTABLES.length;
   const hp = $('hero-pick'); hp.innerHTML = '';
@@ -1005,6 +1031,7 @@ function bind() {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
     t.classList.add('active');
     activeTab = t.dataset.tab;
+    snd('click');
     document.querySelectorAll('.tab-body').forEach(b => b.classList.add('hidden'));
     $('tab-' + activeTab).classList.remove('hidden');
     ui.heroDirty = ui.bagDirty = ui.collDirty = ui.upgDirty = ui.achDirty = true;
@@ -1016,6 +1043,14 @@ function bind() {
   $('auto-equip').onchange = (e) => { S.autoEquip = e.target.checked; };
   $('opt-numbers').onchange = (e) => { S.opts.numbers = e.target.checked; };
   $('opt-toasts').onchange = (e) => { S.opts.toasts = e.target.checked; };
+  $('vol-sfx').oninput = (e) => { S.opts.sound.sfx = e.target.value / 100; $('vol-sfx-val').textContent = e.target.value + '%'; syncAudio(); };
+  $('vol-sfx').onchange = () => snd('coin');
+  $('vol-music').oninput = (e) => { S.opts.sound.music = e.target.value / 100; $('vol-music-val').textContent = e.target.value + '%'; syncAudio(); };
+  const setMuted = (m) => { S.opts.sound.muted = m; syncAudio(); renderStatic(); if (!m) snd('click'); };
+  $('opt-muted').onchange = (e) => setMuted(e.target.checked);
+  $('mute-btn').onclick = () => setMuted(!S.opts.sound.muted);
+  $('sound-hint').onclick = () => { if (window.ToyAudio) window.ToyAudio.unlock(); $('sound-hint').classList.add('hidden'); };
+  document.addEventListener('toyaudio-unlocked', () => { $('sound-hint').classList.add('hidden'); syncAudio(); });
   document.querySelectorAll('[data-autosell]').forEach(cb => cb.onchange = (e) => {
     S.autosell[cb.dataset.autosell] = e.target.checked;
     if (e.target.checked) {
@@ -1056,6 +1091,8 @@ function changeZone(dir) {
   M = null; spawnDelay = 0.2;
   heroAtkTimer = 0;
   log(`🗺️ Traveled to ${ZONES[nz].icon} ${esc(ZONES[nz].name)}.`);
+  snd('zone');
+  if (window.ToyAudio) window.ToyAudio.setZone(nz);
   ui.zoneDirty = true;
 }
 
@@ -1093,6 +1130,7 @@ function init() {
     log('💡 Tip: hover over items to compare them. Click an item to equip or sell it.');
   }
   ST = computeStats();
+  syncAudio();
   ui.all();
   spawnDelay = 0.3;
   lastTick = Date.now();

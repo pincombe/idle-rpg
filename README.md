@@ -12,6 +12,7 @@ An idle RPG set inside a toy box. Your hero fights automatically, showers you wi
 - **Workbench upgrades**, **achievements**, and a **Tidy Up** prestige system that awards Gold Stars.
 - **Automatic saving** to your browser's local storage every few seconds, plus export/import save codes.
 - **Away-time progress** when you come back (up to 8 hours, extendable).
+- **Procedural sound and music**: every effect is synthesized live with the Web Audio API, and a generative music-box soundtrack plays a different tune in each zone (and speeds up for bosses). Mute button in the top bar, volume sliders in Settings.
 
 ## Running locally
 

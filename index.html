@@ -26,6 +26,7 @@
       <div class="res stars" title="Gold Stars (prestige)"><span class="ico">⭐</span><span id="res-stars">0</span></div>
       <div class="res lvl" title="Hero level"><span class="ico">🎖️</span>Lv <span id="res-level">1</span></div>
       <div class="res toys" title="Collectables found"><span class="ico">🧸</span><span id="res-toys">0</span>/<span id="res-toys-max">0</span></div>
+      <button class="res mute" id="mute-btn" title="Mute / unmute sound"><span class="ico" id="mute-ico">🔊</span></button>
     </div>
   </header>
 
@@ -153,7 +154,12 @@
           <button class="btn blue-btn" id="import-save">Load save code</button>
         </div>
         <textarea id="save-io" placeholder="Paste a save code here, then click Load save code." rows="3"></textarea>
-        <h3 class="section-title">🔊 Options</h3>
+        <h3 class="section-title">🔊 Sound</h3>
+        <label class="slider"><span>🔔 Sound effects</span><input type="range" id="vol-sfx" min="0" max="100" value="60"><b id="vol-sfx-val">60%</b></label>
+        <label class="slider"><span>🎵 Music</span><input type="range" id="vol-music" min="0" max="100" value="35"><b id="vol-music-val">35%</b></label>
+        <label class="toggle"><input type="checkbox" id="opt-muted"> Mute everything</label>
+        <p class="hint">Every sound is generated live in your browser, and the music box plays a different tune in each zone.</p>
+        <h3 class="section-title">👀 Display</h3>
         <label class="toggle"><input type="checkbox" id="opt-numbers" checked> Show damage numbers</label>
         <label class="toggle"><input type="checkbox" id="opt-toasts" checked> Show loot pop-ups</label>
         <h3 class="section-title">🗑️ Danger zone</h3>
@@ -164,6 +170,7 @@
   </main>
 
   <div id="toasts" class="toasts"></div>
+  <button id="sound-hint" class="sound-hint">🔇 Click anywhere to turn on sound &amp; music</button>
 
   <div id="modal" class="modal hidden">
     <div class="modal-card block yellow">
@@ -174,6 +181,7 @@
 
   <div id="tooltip" class="tooltip hidden"></div>
 </div>
+<script src="audio.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
