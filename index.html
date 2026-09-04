@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toy Box Quest</title>
+<meta name="description" content="An idle RPG set inside a toy box. Collect loot, fill your collection, and tidy up for gold stars.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧸</text></svg>">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <h1 class="logo" aria-label="Toy Box Quest">
+      <span class="c1">T</span><span class="c2">O</span><span class="c3">Y</span>
+      <span class="gap"></span>
+      <span class="c4">B</span><span class="c5">O</span><span class="c1">X</span>
+      <span class="gap"></span>
+      <span class="c2">Q</span><span class="c3">U</span><span class="c4">E</span><span class="c5">S</span><span class="c1">T</span>
+    </h1>
+    <div class="resources">
+      <div class="res gold" title="Gold coins"><span class="ico">🪙</span><span id="res-gold">0</span></div>
+      <div class="res stars" title="Gold Stars (prestige)"><span class="ico">⭐</span><span id="res-stars">0</span></div>
+      <div class="res lvl" title="Hero level"><span class="ico">🎖️</span>Lv <span id="res-level">1</span></div>
+      <div class="res toys" title="Collectables found"><span class="ico">🧸</span><span id="res-toys">0</span>/<span id="res-toys-max">0</span></div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- BATTLE COLUMN -->
+    <section class="panel arena-panel block red">
+      <div class="panel-tab">🗺️ Play Mat</div>
+      <div class="zone-bar">
+        <button id="zone-prev" class="btn small" title="Previous zone">◀</button>
+        <div class="zone-name"><span id="zone-icon">🧸</span> <span id="zone-title">Toy Chest</span></div>
+        <button id="zone-next" class="btn small" title="Next zone">▶</button>
+      </div>
+      <div class="zone-progress">
+        <div class="zp-track"><div id="zp-fill" class="zp-fill"></div></div>
+        <div class="zp-label" id="zp-label">Boss in 10</div>
+      </div>
+
+      <div class="arena" id="arena">
+        <div class="floor"></div>
+        <div class="fighter hero" id="hero-fighter">
+          <div class="sprite" id="hero-sprite">🧸</div>
+          <div class="nameplate" id="hero-name">Teddy</div>
+          <div class="hpbar hero-hp"><div class="fill" id="hero-hp-fill"></div><span class="hp-text" id="hero-hp-text"></span></div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="fighter monster" id="monster-fighter">
+          <div class="sprite" id="monster-sprite">🧦</div>
+          <div class="nameplate" id="monster-name">Sock Puppet</div>
+          <div class="hpbar monster-hp"><div class="fill" id="monster-hp-fill"></div><span class="hp-text" id="monster-hp-text"></span></div>
+        </div>
+        <div id="fx-layer" class="fx-layer"></div>
+        <div id="nap-overlay" class="nap-overlay hidden">💤 Nap time… <span id="nap-timer"></span></div>
+      </div>
+
+      <div class="quick-stats">
+        <div><span class="lbl">⚔️ Attack</span><span id="qs-atk">0</span></div>
+        <div><span class="lbl">🛡️ Defense</span><span id="qs-def">0</span></div>
+        <div><span class="lbl">⚡ Speed</span><span id="qs-spd">0</span></div>
+        <div><span class="lbl">🎯 Crit</span><span id="qs-crit">0</span></div>
+        <div><span class="lbl">🍀 Luck</span><span id="qs-luck">0</span></div>
+        <div><span class="lbl">🪙 Gold</span><span id="qs-gold">0</span></div>
+      </div>
+
+      <div class="xp-row">
+        <div class="xp-track"><div id="xp-fill" class="xp-fill"></div></div>
+        <div class="xp-label" id="xp-label">XP 0 / 25</div>
+      </div>
+
+      <div class="log" id="log"></div>
+    </section>
+
+    <!-- TABS COLUMN -->
+    <section class="panel tabs-panel block blue">
+      <nav class="tabs" id="tabs">
+        <button class="tab active" data-tab="hero">🧸 Hero</button>
+        <button class="tab" data-tab="bag">🎒 Bag <span class="badge" id="bag-count">0</span></button>
+        <button class="tab" data-tab="toybox">🧰 Toy Box</button>
+        <button class="tab" data-tab="workbench">🔧 Workbench</button>
+        <button class="tab" data-tab="stars">⭐ Stars</button>
+        <button class="tab" data-tab="settings">⚙️</button>
+      </nav>
+
+      <!-- HERO TAB -->
+      <div class="tab-body" id="tab-hero">
+        <div class="hero-header">
+          <div class="hero-portrait" id="hero-portrait">🧸</div>
+          <div>
+            <div class="hero-title"><span id="hero-title-name">Teddy</span> <small>Lv <span id="hero-title-lvl">1</span></small></div>
+            <div class="hero-pick" id="hero-pick"></div>
+          </div>
+        </div>
+        <div class="equip-grid" id="equip-grid"></div>
+        <div class="stat-sheet" id="stat-sheet"></div>
+        <label class="toggle"><input type="checkbox" id="auto-equip" checked> Auto-equip better loot</label>
+      </div>
+
+      <!-- BAG TAB -->
+      <div class="tab-body hidden" id="tab-bag">
+        <div class="bag-tools">
+          <div class="bag-cap">Slots: <span id="bag-used">0</span>/<span id="bag-max">30</span></div>
+          <button class="btn small yellow" id="sell-all-junk">Sell all Common</button>
+          <button class="btn small yellow" id="sell-all">Sell everything</button>
+        </div>
+        <div class="autosell">
+          <span>Auto-sell:</span>
+          <label><input type="checkbox" data-autosell="common"> Common</label>
+          <label><input type="checkbox" data-autosell="uncommon"> Uncommon</label>
+          <label><input type="checkbox" data-autosell="rare"> Rare</label>
+          <label><input type="checkbox" data-autosell="epic"> Epic</label>
+        </div>
+        <div class="inv-grid" id="inv-grid"></div>
+      </div>
+
+      <!-- TOYBOX TAB -->
+      <div class="tab-body hidden" id="tab-toybox">
+        <div class="collection-summary" id="collection-summary"></div>
+        <div id="collection"></div>
+      </div>
+
+      <!-- WORKBENCH TAB -->
+      <div class="tab-body hidden" id="tab-workbench">
+        <p class="hint">Spend gold on permanent-until-tidy-up upgrades.</p>
+        <div id="upgrades"></div>
+      </div>
+
+      <!-- STARS TAB -->
+      <div class="tab-body hidden" id="tab-stars">
+        <div class="prestige-box">
+          <h3>🧹 Tidy Up</h3>
+          <p>Pack everything back into the box and start fresh. You keep your <b>Toy Box collection</b>, <b>achievements</b>, and earn <b>Gold Stars</b>. Each star boosts everything by <b>5%</b> forever.</p>
+          <div class="prestige-preview">Stars you'd earn now: <b id="prestige-gain">0</b> ⭐</div>
+          <button class="btn purple" id="prestige-btn">Tidy Up &amp; Earn Stars</button>
+        </div>
+        <h3 class="section-title">🏅 Achievements <small id="ach-count"></small></h3>
+        <div id="achievements"></div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div class="tab-body hidden" id="tab-settings">
+        <h3 class="section-title">💾 Save</h3>
+        <p class="hint">Your game saves automatically every few seconds and whenever you leave the page. Last saved: <span id="last-saved">never</span></p>
+        <div class="btn-row">
+          <button class="btn green" id="save-now">Save now</button>
+          <button class="btn blue-btn" id="export-save">Copy save code</button>
+          <button class="btn blue-btn" id="import-save">Load save code</button>
+        </div>
+        <textarea id="save-io" placeholder="Paste a save code here, then click Load save code." rows="3"></textarea>
+        <h3 class="section-title">🔊 Options</h3>
+        <label class="toggle"><input type="checkbox" id="opt-numbers" checked> Show damage numbers</label>
+        <label class="toggle"><input type="checkbox" id="opt-toasts" checked> Show loot pop-ups</label>
+        <h3 class="section-title">🗑️ Danger zone</h3>
+        <button class="btn red-btn" id="hard-reset">Delete all progress</button>
+        <p class="stats-line" id="lifetime-stats"></p>
+      </div>
+    </section>
+  </main>
+
+  <div id="toasts" class="toasts"></div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-card block yellow">
+      <div id="modal-content"></div>
+      <button class="btn green" id="modal-close">Okay!</button>
+    </div>
+  </div>
+
+  <div id="tooltip" class="tooltip hidden"></div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
