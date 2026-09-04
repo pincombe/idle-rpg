@@ -401,3 +401,20 @@ button, input, textarea { font-family: inherit; }
   box-shadow: 0 6px 16px var(--shadow); animation: hintBob 1.6s ease-in-out infinite;
 }
 @keyframes hintBob { 0%,100% { transform: translateX(-50%) translateY(0) } 50% { transform: translateX(-50%) translateY(-5px) } }
+
+/* ===== Daily gift ===== */
+.res.daily { background: #ffe0f0; cursor: pointer; font: inherit; font-weight: 700; }
+.res.daily.ready { background: var(--yellow); animation: giftPulse 1.2s ease-in-out infinite; }
+.res.daily.ready .ico { animation: giftWiggle .8s ease-in-out infinite; display: inline-block; }
+@keyframes giftPulse { 0%,100% { box-shadow: 0 3px 0 var(--ink), 0 0 0 0 rgba(255,202,58,.7) } 50% { box-shadow: 0 3px 0 var(--ink), 0 0 0 8px rgba(255,202,58,0) } }
+@keyframes giftWiggle { 0%,100% { transform: rotate(-12deg) } 50% { transform: rotate(12deg) scale(1.15) } }
+.daily-shake { animation: giftWiggle .6s ease-in-out infinite; display: inline-block; }
+.daily-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 12px 0; }
+.daily-day { background: white; border: 3px solid #ccc; border-radius: 12px; padding: 6px 2px; text-align: center; }
+.daily-day .dd-num { font-size: .65rem; font-weight: 700; color: #777; }
+.daily-day .dd-ico { font-size: 1.4rem; }
+.daily-day.done { background: #e4f7d2; border-color: var(--green); }
+.daily-day.today { background: #fff3c4; border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(255,202,58,.5); transform: scale(1.08); }
+.daily-day:nth-child(7) { border-color: var(--purple); }
+.daily-day:nth-child(7).done { border-color: var(--green); }
+@media (max-width: 480px) { .daily-day .dd-num { font-size: .55rem; } .daily-day .dd-ico { font-size: 1.1rem; } }

@@ -80,6 +80,14 @@ const ZONES = [
   { name: 'Haunted Attic', icon: '🕯️', monsters: [['Dust Bunny', '🐇'], ['Creaky Doll', '🪆'], ['Cobweb Bat', '🦇'], ['Ghost Sheet', '👻']], boss: ['Nightlight Wraith', '💀'], toys: [['Old Photo', '📷'], ['Music Box', '🎵'], ['Grandpa\'s Watch', '⌚']] },
   { name: 'Space Playroom', icon: '🚀', monsters: [['Alien Blob', '👾'], ['Rocket Rat', '🐀'], ['Moon Bot', '🛸'], ['Star Slime', '⭐']], boss: ['Galaxy Overlord', '🪐'], toys: [['Moon Rock', '🌑'], ['Glow Planet', '🌍'], ['Comet Tail', '☄️']] },
   { name: 'Dragon\'s Toy Hoard', icon: '🐉', monsters: [['Gold Gecko', '🦎'], ['Gem Beetle', '💎'], ['Coin Golem', '🪙'], ['Treasure Mimic', '🧰']], boss: ['The Toy Dragon', '🐉'], toys: [['Dragon Scale', '🐲'], ['Hoard Key', '🔐'], ['The Very First Toy', '🎁']] },
+  { name: 'Sandbox Desert', icon: '🏖️', monsters: [['Sandcastle Golem', '🏰'], ['Beach Ball Bully', '🏐'], ['Sand Worm', '🪱'], ['Crabby Patty', '🦀']], boss: ['Dune Camel King', '🐪'], toys: [['Plastic Shovel', '⛏️'], ['Message in a Bottle', '🍾'], ['Golden Sand Dollar', '🌕']] },
+  { name: 'Frosty Freezer', icon: '❄️', monsters: [['Snow Cone Slime', '🍧'], ['Penguin Plush', '🐧'], ['Ice Cube Golem', '🧊'], ['Polar Bear Cub', '🐻‍❄️']], boss: ['The Abominable Snowtoy', '⛄'], toys: [['Snowflake Charm', '❄️'], ['Mitten Puppet', '🧤'], ['Never-melting Popsicle', '🍦']] },
+  { name: 'Jungle Gym', icon: '🐒', monsters: [['Swinging Monkey', '🐒'], ['Toucan Toy', '🦜'], ['Vine Snake', '🐍'], ['Jungle Frog', '🐸']], boss: ['King Kong-a-Lot', '🦍'], toys: [['Banana Squeaker', '🍌'], ['Explorer Hat', '🎩'], ['Golden Idol', '🗿']] },
+  { name: 'Circus Big Top', icon: '🎪', monsters: [['Clown Puppet', '🤡'], ['Juggling Seal', '🦭'], ['Dancing Elephant', '🐘'], ['Tightrope Tiger', '🐯']], boss: ['The Ringmaster', '🎩'], toys: [['Popcorn Box', '🍿'], ['Tiny Unicycle', '🚲'], ['Human Cannonball', '⚫']] },
+  { name: 'Dino Dig Site', icon: '🦴', monsters: [['Bone Digger', '🦴'], ['Raptor Figurine', '🦖'], ['Pterodactyl Kite', '🦅'], ['Fossil Turtle', '🐢']], boss: ['Mega Rex', '🦕'], toys: [['Dino Egg', '🥚'], ['Amber Stone', '🟠'], ['T-Rex Skull', '💀']] },
+  { name: 'Pirate Bathtub Bay', icon: '🏴‍☠️', monsters: [['Parrot Puppet', '🦜'], ['Cannon Crab', '🦀'], ['Ghost Sailor', '👻'], ['Rubber Shark', '🦈']], boss: ['Captain Squeakbeard', '🧔'], toys: [['Treasure Map', '🗺️'], ['Eye Patch', '🕶️'], ['Golden Doubloon', '🪙']] },
+  { name: 'Robot Factory', icon: '🏭', monsters: [['Assembly Arm', '🦾'], ['Battery Bug', '🔋'], ['Scrap Drone', '🛸'], ['Laser Cat', '😼']], boss: ['Mega Mech', '🤖'], toys: [['Blueprint', '📐'], ['Toy Chip', '💾'], ['Golden Circuit', '⚡']] },
+  { name: 'Rainbow Cloud Kingdom', icon: '🌈', monsters: [['Cloud Sheep', '🐑'], ['Sun Sprite', '☀️'], ['Star Fairy', '🧚'], ['Thunder Puff', '⛈️']], boss: ['The Rainbow Unicorn', '🦄'], toys: [['Pot of Gold', '🍯'], ['Cloud Pillow', '☁️'], ['The Last Toy in the Box', '🎁']] },
 ];
 const KILLS_PER_BOSS = 10;
 
@@ -151,7 +159,12 @@ const ACHIEVEMENTS = [
   { id: 'lvl60',     icon: '🧠', name: 'Big Brain',        desc: 'Reach level 60',               check: s => s.stats.maxLevel >= 60 },
   { id: 'zone5',     icon: '🗺️', name: 'Explorer',         desc: 'Unlock the 5th zone',          check: s => s.stats.maxZone >= 5 },
   { id: 'zone9',     icon: '🧭', name: 'Adventurer',       desc: 'Unlock the 9th zone',          check: s => s.stats.maxZone >= 9 },
-  { id: 'zoneAll',   icon: '🐉', name: 'Whole Playroom',   desc: 'Unlock every zone',            check: s => s.stats.maxZone >= ZONES.length },
+  { id: 'zone13',    icon: '🏖️', name: 'Trailblazer',      desc: 'Unlock the 13th zone',         check: s => s.stats.maxZone >= 13 },
+  { id: 'zone17',    icon: '🦴', name: 'World Traveler',   desc: 'Unlock the 17th zone',         check: s => s.stats.maxZone >= 17 },
+  { id: 'zoneAll',   icon: '🌈', name: 'Whole Playroom',   desc: 'Unlock every zone',            check: s => s.stats.maxZone >= ZONES.length },
+  { id: 'daily3',    icon: '🎁', name: 'Regular Visitor',  desc: 'Claim 3 daily gifts',          check: s => s.daily.total >= 3 },
+  { id: 'daily7',    icon: '📅', name: 'Week of Play',     desc: 'Reach a 7-day login streak',   check: s => s.daily.bestStreak >= 7 },
+  { id: 'daily30',   icon: '🗓️', name: 'Toy Box Regular',  desc: 'Claim 30 daily gifts',         check: s => s.daily.total >= 30 },
   { id: 'prestige1', icon: '🧹', name: 'Tidy Room',        desc: 'Tidy up once',                 check: s => s.stats.prestiges >= 1 },
   { id: 'prestige5', icon: '✨', name: 'Spotless',         desc: 'Tidy up 5 times',              check: s => s.stats.prestiges >= 5 },
   { id: 'sell100',   icon: '🏷️', name: 'Yard Sale',        desc: 'Sell 100 items',               check: s => s.stats.itemsSold >= 100 },
@@ -174,6 +187,7 @@ function defaultState() {
     autosell: {}, autoEquip: true,
     opts: { numbers: true, toasts: true, sound: { sfx: 0.6, music: 0.35, muted: false } },
     stats: { kills: 0, bosses: 0, goldEarned: 0, itemsFound: 0, itemsSold: 0, prestiges: 0, maxLevel: 1, maxZone: 1, playtime: 0, deaths: 0, bestRarity: -1 },
+    daily: { last: '', streak: 0, total: 0, bestStreak: 0 },
     lastSave: Date.now(),
   };
 }
@@ -207,7 +221,6 @@ function computeStats() {
   const global = (1 + 0.05 * S.stars) * (1 + 0.01 * achCount) * (1 + 0.04 * sets);
   st.atk = st.atk * (1 + 0.10 * upgLvl('atk')) * global;
   st.hp = st.hp * (1 + 0.10 * upgLvl('hp')) * global;
-  st.def = st.def * global;
   st.crit += 2 * upgLvl('crit');
   st.speed = 1 + (st.speed + 5 * upgLvl('spd')) / 100;
   st.gold = (st.gold + 10 * upgLvl('gold') + 0.5 * uniqueToys) * global + (global - 1) * 100;
@@ -232,7 +245,8 @@ function makeItem(zoneIdx, minRarity = 0) {
   const rIdx = rollRarity(ST.luck, minRarity);
   const R = RARITIES[rIdx];
   const ilvl = itemLevelFor(zoneIdx);
-  const v = () => rand(0.85, 1.15) * R.mult;
+  const zm = Math.pow(1.08, zoneIdx); // deep zones drop meaningfully stronger gear
+  const v = () => rand(0.85, 1.15) * R.mult * zm;
   const stats = {};
   const add = (k, val) => { stats[k] = (stats[k] || 0) + val; };
   switch (slot) {
@@ -246,7 +260,7 @@ function makeItem(zoneIdx, minRarity = 0) {
   const affixPool = ['atk', 'def', 'hp', 'crit', 'speed', 'gold', 'xp', 'luck'];
   for (let i = 0; i < R.affixes; i++) {
     const k = affixPool.splice(Math.floor(Math.random() * affixPool.length), 1)[0];
-    const m = R.mult * 0.7 * rand(0.85, 1.15);
+    const m = R.mult * 0.7 * rand(0.85, 1.15) * zm;
     const val = { atk: 1 + ilvl * 0.3, def: 0.5 + ilvl * 0.25, hp: 4 + ilvl * 1.5, crit: 2 + ilvl * 0.08, speed: 1 + ilvl * 0.08, gold: 2 + ilvl * 0.2, xp: 2 + ilvl * 0.2, luck: 2 + ilvl * 0.2 }[k];
     add(k, val * (PCT_STATS.has(k) ? Math.sqrt(m) : m));
   }
@@ -584,6 +598,97 @@ function checkAchievements() {
   if (changed) { ST = computeStats(); ui.achDirty = ui.heroDirty = true; }
 }
 
+/* ------------------------------ daily gift ------------------------- */
+const DAILY_DAYS = [
+  { icon: '🪙', label: 'Gold + Uncommon item',        goldMult: 1,   items: [1],       toys: 0, star: 0 },
+  { icon: '🧸', label: 'Gold + a collectable',        goldMult: 1.2, items: [],        toys: 1, star: 0 },
+  { icon: '💙', label: 'Gold + Rare item',            goldMult: 1.5, items: [2],       toys: 0, star: 0 },
+  { icon: '🧸', label: 'Gold + 2 collectables',       goldMult: 1.8, items: [],        toys: 2, star: 0 },
+  { icon: '💜', label: 'Gold + Epic item',            goldMult: 2.2, items: [3],       toys: 0, star: 0 },
+  { icon: '🎁', label: 'Gold + 2 Rare + collectable', goldMult: 2.6, items: [2, 2],    toys: 1, star: 0 },
+  { icon: '⭐', label: 'Legendary item + Gold Star!', goldMult: 4,   items: [4],       toys: 1, star: 1 },
+];
+function localDateStr(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function dailyInfo() {
+  const today = localDateStr(new Date());
+  const yesterday = localDateStr(new Date(Date.now() - 86400000));
+  const claimedToday = S.daily.last === today;
+  let streak = S.daily.streak || 0;
+  if (!claimedToday) streak = S.daily.last === yesterday ? streak + 1 : 1; // streak you'll have after claiming
+  const day = ((streak - 1) % 7) + 1;
+  return { today, claimedToday, streak, day, broke: !claimedToday && S.daily.last && S.daily.last !== yesterday && S.daily.streak > 1 };
+}
+function dailyGold(day) {
+  const base = zoneMonsterStats(S.zone, 5, false).gold * (1 + ST.gold / 100);
+  return Math.max(25, Math.round(base * 50 * DAILY_DAYS[day - 1].goldMult));
+}
+function claimDaily() {
+  const info = dailyInfo();
+  if (info.claimedToday) return null;
+  const D = DAILY_DAYS[info.day - 1];
+  const gold = dailyGold(info.day);
+  S.gold += gold; S.stats.goldEarned += gold;
+  const items = [], toys = [];
+  for (const minR of D.items) { const it = makeItem(S.zone, minR); items.push(it); receiveItem(it); }
+  for (let i = 0; i < D.toys; i++) { const c = Math.random() < 0.25 ? rollGlobalCollectable() : rollCollectable(randInt(0, S.unlockedZones - 1), true); toys.push(c); receiveCollectable(c); }
+  if (D.star) { S.stars += D.star; ST = computeStats(); }
+  S.daily.last = info.today; S.daily.streak = info.streak; S.daily.total = (S.daily.total || 0) + 1;
+  S.daily.bestStreak = Math.max(S.daily.bestStreak || 0, info.streak);
+  log(`🎁 <span class="good">Daily gift day ${info.day} claimed!</span> +🪙${fmt(gold)}${D.star ? ' +⭐' : ''}. Streak: ${info.streak} day${info.streak === 1 ? '' : 's'}.`);
+  snd(D.star ? 'prestige' : 'achievement');
+  checkAchievements();
+  ui.all(); save();
+  return { info, D, gold, items, toys };
+}
+function dailyCalendarHtml(info) {
+  const claimedDay = info.claimedToday ? info.day : info.day - 1; // days already lit this week
+  let html = '<div class="daily-cal">';
+  DAILY_DAYS.forEach((d, i) => {
+    const n = i + 1;
+    const cls = n <= claimedDay ? 'done' : (n === info.day && !info.claimedToday ? 'today' : '');
+    html += `<div class="daily-day ${cls}" title="${esc(d.label)}"><div class="dd-num">Day ${n}</div><div class="dd-ico">${n <= claimedDay ? '✅' : d.icon}</div></div>`;
+  });
+  return html + '</div>';
+}
+function openDailyModal() {
+  const info = dailyInfo();
+  const D = DAILY_DAYS[info.day - 1];
+  let body;
+  if (info.claimedToday) {
+    body = `<div class="levelup-burst">📅</div><h2>Daily Gift</h2>
+      <p>You already opened today's gift. Come back tomorrow for <b>Day ${(info.day % 7) + 1}</b>: ${esc(DAILY_DAYS[info.day % 7].label)}.</p>
+      ${dailyCalendarHtml(info)}
+      <p class="hint">Current streak: <b>${info.streak}</b> day${info.streak === 1 ? '' : 's'} · Gifts opened: <b>${S.daily.total}</b></p>`;
+  } else {
+    body = `<div class="levelup-burst daily-shake">🎁</div><h2>Daily Gift — Day ${info.day}</h2>
+      ${info.broke ? `<p class="hint">You missed a day, so the streak starts over. No worries!</p>` : ''}
+      <p>Today's gift: <b>${esc(D.label)}</b> (about 🪙${fmt(dailyGold(info.day))}).</p>
+      ${dailyCalendarHtml(info)}
+      <button class="btn purple" id="daily-claim">Open the gift! 🎁</button>
+      <p class="hint">Log in on consecutive days to work up to the Day 7 Gold Star.</p>`;
+  }
+  showModal(body);
+  const b = $('daily-claim');
+  if (b) b.onclick = () => {
+    const r = claimDaily();
+    if (!r) return;
+    const itemHtml = r.items.map(it => `<li>🎁 <span style="color:var(--r-${RARITIES[it.rarity].id});font-weight:700">${it.icon} ${esc(it.name)}</span></li>`).join('');
+    const toyHtml = r.toys.map(c => `<li>🧸 ${c.icon} ${esc(c.name)}${S.collection[c.id] > 1 ? ` (×${S.collection[c.id]})` : ' <b>NEW!</b>'}</li>`).join('');
+    showModal(`<div class="levelup-burst">🎉</div><h2>Day ${r.info.day} gift opened!</h2>
+      <ul><li>🪙 <b>${fmt(r.gold)}</b> gold</li>${itemHtml}${toyHtml}${r.D.star ? '<li>⭐ <b>+1 Gold Star</b> (+5% to everything, forever)</li>' : ''}</ul>
+      ${dailyCalendarHtml(dailyInfo())}
+      <p class="hint">Streak: <b>${r.info.streak}</b> day${r.info.streak === 1 ? '' : 's'}. See you tomorrow!</p>`);
+    renderDailyButton();
+  };
+}
+function renderDailyButton() {
+  const info = dailyInfo();
+  const b = $('daily-btn');
+  b.classList.toggle('ready', !info.claimedToday);
+  $('daily-txt').textContent = info.claimedToday ? `Day ${info.day} ✓` : 'Gift!';
+  b.title = info.claimedToday ? `Daily gift claimed · streak ${info.streak}` : 'Your daily gift is ready!';
+}
+
 /* -------------------------- offline progress ----------------------- */
 function simulateAway(seconds) {
   const cap = offlineCapHours() * 3600;
@@ -657,6 +762,7 @@ function applyLoaded(data) {
   S.stats = Object.assign(def.stats, data.stats || {});
   S.opts = Object.assign(def.opts, data.opts || {});
   S.opts.sound = Object.assign(def.opts.sound, (data.opts && data.opts.sound) || {});
+  S.daily = Object.assign(def.daily, data.daily || {});
   S.upgrades = data.upgrades || {}; S.collection = data.collection || {}; S.newColl = data.newColl || {};
   S.achievements = data.achievements || {}; S.autosell = data.autosell || {}; S.equipment = data.equipment || {};
   S.inventory = Array.isArray(data.inventory) ? data.inventory : [];
@@ -1049,6 +1155,7 @@ function bind() {
   const setMuted = (m) => { S.opts.sound.muted = m; syncAudio(); renderStatic(); if (!m) snd('click'); };
   $('opt-muted').onchange = (e) => setMuted(e.target.checked);
   $('mute-btn').onclick = () => setMuted(!S.opts.sound.muted);
+  $('daily-btn').onclick = () => { snd('click'); openDailyModal(); };
   $('sound-hint').onclick = () => { if (window.ToyAudio) window.ToyAudio.unlock(); $('sound-hint').classList.add('hidden'); };
   document.addEventListener('toyaudio-unlocked', () => { $('sound-hint').classList.add('hidden'); syncAudio(); });
   document.querySelectorAll('[data-autosell]').forEach(cb => cb.onchange = (e) => {
@@ -1112,7 +1219,7 @@ function loop() {
   dt = Math.min(dt, 1);
   tick(dt);
   saveTimer += dt;
-  if (saveTimer >= 5) { saveTimer = 0; save(); }
+  if (saveTimer >= 5) { saveTimer = 0; save(); renderDailyButton(); }
   renderFrame();
 }
 
@@ -1132,6 +1239,8 @@ function init() {
   ST = computeStats();
   syncAudio();
   ui.all();
+  renderDailyButton();
+  if (!dailyInfo().claimedToday) { log('🎁 <span class="good">Your daily gift is ready!</span> Click the gift in the top bar.'); toast('🎁', 'Daily gift ready!', 'Click the gift box in the top bar', 'rc-legendary', true); }
   spawnDelay = 0.3;
   lastTick = Date.now();
   setInterval(loop, 100);

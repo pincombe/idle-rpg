@@ -199,6 +199,14 @@ const THEMES = [
   { root: 52, scale: MINOR, bpm: 90,  prog: [0, 5, 3, 4], lead: 'bell',   feel: 'spooky'  }, // Haunted Attic
   { root: 60, scale: MAJOR, bpm: 120, prog: [0, 1, 3, 4], lead: 'square', feel: 'soft'    }, // Space Playroom
   { root: 55, scale: MINOR, bpm: 138, prog: [0, 6, 5, 4], lead: 'square', feel: 'march'   }, // Dragon's Toy Hoard
+  { root: 62, scale: MINOR, bpm: 104, prog: [0, 3, 0, 4], lead: 'pluck',  feel: 'bouncy'  }, // Sandbox Desert
+  { root: 60, scale: MAJOR, bpm: 100, prog: [0, 5, 1, 4], lead: 'bell',   feel: 'soft'    }, // Frosty Freezer
+  { root: 55, scale: MAJOR, bpm: 130, prog: [0, 3, 4, 3], lead: 'pluck',  feel: 'bouncy'  }, // Jungle Gym
+  { root: 53, scale: MAJOR, bpm: 140, prog: [0, 4, 0, 4], lead: 'square', feel: 'march'   }, // Circus Big Top
+  { root: 50, scale: MINOR, bpm: 112, prog: [0, 5, 6, 0], lead: 'pluck',  feel: 'march'   }, // Dino Dig Site
+  { root: 57, scale: MINOR, bpm: 126, prog: [0, 6, 0, 4], lead: 'square', feel: 'bouncy'  }, // Pirate Bathtub Bay
+  { root: 52, scale: MINOR, bpm: 134, prog: [0, 0, 5, 6], lead: 'square', feel: 'march'   }, // Robot Factory
+  { root: 61, scale: MAJOR, bpm: 118, prog: [0, 3, 5, 4], lead: 'bell',   feel: 'bouncy'  }, // Rainbow Cloud Kingdom
 ];
 const M = {
   running: false, timer: null, zone: 0, boss: false,
