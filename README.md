@@ -12,6 +12,7 @@ An idle RPG set inside a toy box. Your hero fights automatically, showers you wi
 - **Workbench upgrades**, **achievements**, and a **Tidy Up** prestige system that awards Gold Stars.
 - **Automatic saving** to your browser's local storage every few seconds, plus export/import save codes.
 - **Away-time progress** when you come back (up to 8 hours, extendable).
+- **Pets** that fight beside you: hatch eggs (from bosses, rare drops and daily gifts) into 17 toy companions with their own attacks, passive bonuses and special abilities like healing, shielding and chilling enemies. Pets level up from shared XP and duplicate hatches, and survive Tidy Ups.
 - **Daily gift** with a 7-day streak calendar: gold and gear scaled to your current zone, collectables, and a Gold Star on day 7.
 - **Procedural sound and music**: every effect is synthesized live with the Web Audio API, and a generative music-box soundtrack plays a different tune in each zone (and speeds up for bosses). Mute button in the top bar, volume sliders in Settings.
 

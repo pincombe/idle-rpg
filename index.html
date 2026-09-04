@@ -48,6 +48,7 @@
       <div class="arena" id="arena">
         <div class="floor"></div>
         <div class="fighter hero" id="hero-fighter">
+          <div class="pet-row" id="pet-row"></div>
           <div class="sprite" id="hero-sprite">🧸</div>
           <div class="nameplate" id="hero-name">Teddy</div>
           <div class="hpbar hero-hp"><div class="fill" id="hero-hp-fill"></div><span class="hp-text" id="hero-hp-text"></span></div>
@@ -86,6 +87,7 @@
         <button class="tab" data-tab="bag">🎒 Bag <span class="badge" id="bag-count">0</span></button>
         <button class="tab" data-tab="toybox">🧰 Toy Box</button>
         <button class="tab" data-tab="workbench">🔧 Workbench</button>
+        <button class="tab" data-tab="pets">🐾 Pets <span class="badge hidden" id="egg-count">0</span></button>
         <button class="tab" data-tab="stars">⭐ Stars</button>
         <button class="tab" data-tab="settings">⚙️</button>
       </nav>
@@ -134,6 +136,17 @@
       </div>
 
       <!-- STARS TAB -->
+      <!-- PETS TAB -->
+      <div class="tab-body hidden" id="tab-pets">
+        <div class="pets-head">
+          <div class="egg-box"><span class="egg-ico">🥚</span> <b id="pets-eggs">0</b> eggs</div>
+          <button class="btn purple" id="hatch-btn">Hatch an egg!</button>
+          <div class="pets-meta">Active: <b id="pets-active">0/1</b> · Owned: <b id="pets-owned">0/17</b></div>
+        </div>
+        <p class="hint">Pets fight beside you with their own attacks and give passive bonuses. Eggs drop from bosses (25%), rarely from any toy, and from daily gifts. Hatching a pet you already own levels it up. Pets stay with you through Tidy Ups.</p>
+        <div id="pet-grid"></div>
+      </div>
+
       <div class="tab-body hidden" id="tab-stars">
         <div class="prestige-box">
           <h3>🧹 Tidy Up</h3>

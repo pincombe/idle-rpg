@@ -127,8 +127,34 @@ const UPGRADES = [
   { id: 'regen',   icon: '🩹', name: 'Bandage Box',        desc: '+0.5% max HP regenerated per second in battle', base: 100, growth: 1.8,  max: 10 },
   { id: 'bag',     icon: '🧰', name: 'Bigger Toy Box',     desc: '+6 bag slots per level',                        base: 150, growth: 2.0,  max: 10 },
   { id: 'offline', icon: '⏰', name: 'Night Light',        desc: '+2 hours of away-time progress per level',      base: 500, growth: 2.2,  max: 8 },
+  { id: 'petslot', icon: '🧺', name: 'Pet Basket',         desc: 'Bring a second pet into battle',                base: 2500, growth: 1,   max: 1 },
+  { id: 'treats',  icon: '🍪', name: 'Treat Jar',          desc: '+15% pet damage per level',                     base: 300, growth: 1.7,  max: 20 },
 ];
 const upgCost = (u, lvl) => Math.round(u.base * Math.pow(u.growth, lvl));
+
+const PETS = [
+  { id: 'puppy',   name: 'Puppy Plush',     icon: '🐶', rarity: 0, dmg: 0.35, interval: 1.4, passive: { gold: 6 },            desc: 'Digs up extra gold' },
+  { id: 'kitten',  name: 'Yarn Kitten',     icon: '🐱', rarity: 0, dmg: 0.30, interval: 1.2, passive: { crit: 4 },            desc: 'Pounces for critical hits' },
+  { id: 'hamster', name: 'Wheel Hamster',   icon: '🐹', rarity: 0, dmg: 0.16, interval: 0.6, passive: { speed: 4 },           desc: 'Zooms around at top speed' },
+  { id: 'turtle',  name: 'Shell Turtle',    icon: '🐢', rarity: 0, dmg: 0.25, interval: 2.0, passive: {}, special: 'shield',  desc: 'Blocks 12% of damage the hero takes' },
+  { id: 'bunny',   name: 'Hop Bunny',       icon: '🐰', rarity: 1, dmg: 0.30, interval: 1.3, passive: { xp: 8 },              desc: 'Learns fast and shares XP' },
+  { id: 'fox',     name: 'Clever Fox',      icon: '🦊', rarity: 1, dmg: 0.35, interval: 1.4, passive: { luck: 8 },            desc: 'Sniffs out rarer loot' },
+  { id: 'bee',     name: 'Buzzy Bee',       icon: '🐝', rarity: 1, dmg: 0.13, interval: 0.45, passive: {},                    desc: 'Stings again and again and again' },
+  { id: 'frog',    name: 'Lily Frog',       icon: '🐸', rarity: 1, dmg: 0.25, interval: 1.6, passive: {}, special: 'heal',    desc: 'Heals the hero 3% HP with every hop' },
+  { id: 'owl',     name: 'Night Owl',       icon: '🦉', rarity: 2, dmg: 0.40, interval: 1.8, passive: { xp: 15 },             desc: 'Wise: a big XP boost' },
+  { id: 'penguin', name: 'Slide Penguin',   icon: '🐧', rarity: 2, dmg: 0.35, interval: 1.5, passive: {}, special: 'chill',   desc: 'Chills enemies so they attack 15% slower' },
+  { id: 'robot',   name: 'Mini Mech',       icon: '🤖', rarity: 2, dmg: 0.55, interval: 1.5, passive: {},                     desc: 'Reliable laser pew-pews' },
+  { id: 'octopus', name: 'Ink Octopus',     icon: '🐙', rarity: 2, dmg: 0.20, interval: 0.55, passive: { gold: 5, luck: 5 },  desc: 'Eight arms, eight bonks' },
+  { id: 'ghost',   name: 'Boo Buddy',       icon: '👻', rarity: 3, dmg: 0.50, interval: 1.4, passive: {}, special: 'lifesteal', desc: 'Heals the hero for 30% of its damage' },
+  { id: 'dragon',  name: 'Baby Dragon',     icon: '🐲', rarity: 3, dmg: 1.20, interval: 2.4, passive: { crit: 5 },            desc: 'Slow but scorching' },
+  { id: 'unicorn', name: 'Sparkle Unicorn', icon: '🦄', rarity: 4, dmg: 0.60, interval: 1.3, passive: { luck: 15, gold: 10 }, special: 'heal', desc: 'Lucky, shiny, and healing' },
+  { id: 'phoenix', name: 'Ember Phoenix',   icon: '🔥', rarity: 4, dmg: 0.90, interval: 1.5, passive: { xp: 15 }, special: 'quicknap', desc: 'Naps last half as long' },
+  { id: 'golden',  name: 'Golden Dragon',   icon: '🐉', rarity: 5, dmg: 1.60, interval: 1.8, passive: { gold: 25, luck: 15, crit: 8 }, desc: 'The ultimate toy companion' },
+];
+const PET_BY_ID = Object.fromEntries(PETS.map(p => [p.id, p]));
+const PET_RARITY_MULT = [1, 1.2, 1.45, 1.8, 2.3, 3];
+const SPECIAL_LABEL = { shield: '🛡️ Shield', heal: '💚 Healer', chill: '🧊 Chill', lifesteal: '🩸 Lifesteal', quicknap: '⏱️ Quick nap' };
+const petXpNeeded = (lvl) => Math.floor(30 * Math.pow(lvl, 1.5));
 
 const HEROES = [['🧸', 'Teddy'], ['🤖', 'Robo'], ['🦄', 'Sparkle'], ['🦖', 'Rexy'], ['🧙', 'Wizzo'], ['🥷', 'Shadow'], ['🐙', 'Inky'], ['👾', 'Pixel']];
 
@@ -170,6 +196,11 @@ const ACHIEVEMENTS = [
   { id: 'sell100',   icon: '🏷️', name: 'Yard Sale',        desc: 'Sell 100 items',               check: s => s.stats.itemsSold >= 100 },
   { id: 'nap10',     icon: '💤', name: 'Sleepyhead',       desc: 'Take 10 naps',                 check: s => s.stats.deaths >= 10 },
   { id: 'time1h',    icon: '⏰', name: 'Playtime',         desc: 'Play for 1 hour',              check: s => s.stats.playtime >= 3600 },
+  { id: 'pet1',      icon: '🥚', name: 'It Hatched!',      desc: 'Hatch your first pet',         check: s => Object.keys(s.pets).length >= 1 },
+  { id: 'pet8',      icon: '🐾', name: 'Pet Parade',       desc: 'Own 8 different pets',         check: s => Object.keys(s.pets).length >= 8 },
+  { id: 'petAll',    icon: '🐉', name: 'Zookeeper',        desc: 'Own every pet',                check: s => Object.keys(s.pets).length >= PETS.length },
+  { id: 'petLvl10',  icon: '🎓', name: 'Good Boy',         desc: 'Raise a pet to level 10',      check: s => Object.values(s.pets).some(p => p.lvl >= 10) },
+  { id: 'eggs25',    icon: '🍳', name: 'Egg-cellent',      desc: 'Hatch 25 eggs',                check: s => s.stats.eggsHatched >= 25 },
 ];
 
 /* ------------------------------ state ------------------------------ */
@@ -186,8 +217,9 @@ function defaultState() {
     achievements: {},
     autosell: {}, autoEquip: true,
     opts: { numbers: true, toasts: true, sound: { sfx: 0.6, music: 0.35, muted: false } },
-    stats: { kills: 0, bosses: 0, goldEarned: 0, itemsFound: 0, itemsSold: 0, prestiges: 0, maxLevel: 1, maxZone: 1, playtime: 0, deaths: 0, bestRarity: -1 },
+    stats: { kills: 0, bosses: 0, goldEarned: 0, itemsFound: 0, itemsSold: 0, prestiges: 0, maxLevel: 1, maxZone: 1, playtime: 0, deaths: 0, bestRarity: -1, eggsHatched: 0, petDamage: 0 },
     daily: { last: '', streak: 0, total: 0, bestStreak: 0 },
+    pets: {}, activePets: [], eggs: 0, flags: {},
     lastSave: Date.now(),
   };
 }
@@ -215,6 +247,12 @@ function computeStats() {
     if (!it) continue;
     for (const k in it.stats) st[k] += it.stats[k];
   }
+  for (const pid of S.activePets) {
+    const P = PET_BY_ID[pid], pd = S.pets[pid];
+    if (!P || !pd) continue;
+    const lm = 1 + 0.05 * (pd.lvl - 1);
+    for (const k in P.passive) st[k] += P.passive[k] * lm;
+  }
   const achCount = Object.keys(S.achievements).length;
   const uniqueToys = Object.keys(S.collection).length;
   const sets = completeSets(S);
@@ -227,11 +265,115 @@ function computeStats() {
   st.xp = (st.xp + 10 * upgLvl('xp') + 0.5 * uniqueToys) * global + (global - 1) * 100;
   st.luck += 5 * upgLvl('luck');
   st.regen = 0.005 * upgLvl('regen');
+  st.petMult = 1 + 0.15 * upgLvl('treats');
   st.critMult = 2;
   st.global = global;
   return st;
 }
 let ST = computeStats();
+
+/* -------------------------------- pets ----------------------------- */
+function maxActivePets() { return 1 + upgLvl('petslot'); }
+function activePetList() { return S.activePets.map(id => PET_BY_ID[id]).filter(Boolean); }
+function hasSpecial(sp) { return S.activePets.some(id => PET_BY_ID[id] && PET_BY_ID[id].special === sp); }
+function petDamage(P) {
+  const pd = S.pets[P.id];
+  return ST.atk * P.dmg * PET_RARITY_MULT[P.rarity] * (1 + 0.06 * ((pd ? pd.lvl : 1) - 1)) * ST.petMult;
+}
+function petInterval(P) { return P.interval / (1 + (ST.speed - 1) * 0.5); }
+function petDps(P) { return petDamage(P) / petInterval(P) * (1 + (ST.crit / 100) * (ST.critMult - 1)); }
+function totalPetDps() { return activePetList().reduce((a, P) => a + petDps(P), 0); }
+const petTimers = {};
+function rollPet() { return weightedPick(PETS, p => COLL_WEIGHTS[p.rarity] * (1 + ST.luck / 100 * p.rarity * 0.3)); }
+function gainEgg(n, why) {
+  S.eggs += n;
+  log(`🥚 <span class="good">Found ${n > 1 ? n + ' Pet Eggs' : 'a Pet Egg'}!</span> ${why || ''} Hatch it in the 🐾 Pets tab.`);
+  toast('🥚', n > 1 ? `${n} Pet Eggs!` : 'A Pet Egg!', 'Hatch it in the Pets tab', 'rc-rare', true);
+  snd('pickup');
+  ui.petsDirty = true;
+}
+function hatchEgg() {
+  if (S.eggs <= 0) { snd('deny'); return null; }
+  S.eggs--; S.stats.eggsHatched++;
+  const P = rollPet();
+  const R = RARITIES[P.rarity];
+  let result;
+  if (!S.pets[P.id]) {
+    S.pets[P.id] = { lvl: 1, xp: 0 };
+    if (S.activePets.length < maxActivePets()) S.activePets.push(P.id);
+    result = { P, isNew: true };
+    log(`🐾 <span class="r-${R.id}">NEW pet: ${P.icon} ${esc(P.name)}</span> hatched! ${esc(P.desc)}.`);
+    toast(P.icon, `New pet: ${P.name}!`, `${R.name} · ${P.desc}`, 'rc-' + R.id, true);
+  } else {
+    const gained = petXpNeeded(S.pets[P.id].lvl);
+    result = { P, isNew: false, xpGained: gained };
+    addPetXp(P.id, gained, true);
+    log(`🐾 Another <span class="r-${R.id}">${esc(P.name)}</span> hatched — your ${esc(P.name)} gained ${fmt(gained)} XP.`);
+  }
+  snd('hatch');
+  ST = computeStats();
+  checkAchievements();
+  ui.petsDirty = ui.heroDirty = true;
+  return result;
+}
+function addPetXp(id, amount, fromDup) {
+  const pd = S.pets[id]; if (!pd) return;
+  pd.xp += amount;
+  let ups = 0;
+  while (pd.xp >= petXpNeeded(pd.lvl) && pd.lvl < 100) { pd.xp -= petXpNeeded(pd.lvl); pd.lvl++; ups++; }
+  if (ups) {
+    const P = PET_BY_ID[id];
+    log(`🐾 <span class="good">${P.icon} ${esc(P.name)} grew to level ${pd.lvl}!</span>`);
+    if (!fromDup) toast(P.icon, `${P.name} is level ${pd.lvl}!`, 'Pet damage and bonuses increased', 'rc-uncommon');
+    snd('petLevel');
+    ST = computeStats();
+    ui.petsDirty = ui.heroDirty = true;
+    checkAchievements();
+  }
+}
+function togglePet(id) {
+  const i = S.activePets.indexOf(id);
+  if (i >= 0) S.activePets.splice(i, 1);
+  else {
+    if (!S.pets[id]) return;
+    if (S.activePets.length >= maxActivePets()) { snd('deny'); toast('🧺', 'No room!', 'Rest a pet first, or buy a Pet Basket', 'rc-common'); return; }
+    S.activePets.push(id);
+  }
+  snd('click');
+  ST = computeStats();
+  ui.petsDirty = ui.heroDirty = true;
+  renderPetSprites();
+}
+function petsTick(dt) {
+  if (!M) return;
+  const maxHp = heroMaxHp();
+  for (const P of activePetList()) {
+    petTimers[P.id] = (petTimers[P.id] || 0) + dt;
+    const iv = petInterval(P);
+    let guard = 0;
+    while (petTimers[P.id] >= iv && M && guard++ < 10) {
+      petTimers[P.id] -= iv;
+      const crit = Math.random() * 100 < ST.crit;
+      const dmg = Math.max(1, Math.round(petDamage(P) * rand(0.9, 1.1) * (crit ? ST.critMult : 1)));
+      M.hp -= dmg;
+      S.stats.petDamage += dmg;
+      fxDamage('pet-' + P.id, dmg, crit ? 'crit pet' : 'pet');
+      flash('pet-' + P.id, 'lunge'); flash('monster-sprite', 'hit');
+      snd('petHit');
+      if (P.special === 'heal' && S.heroHp < 1) { S.heroHp = Math.min(1, S.heroHp + 0.03); fxDamage('hero', '+' + fmt(maxHp * 0.03), 'heal'); }
+      if (P.special === 'lifesteal' && S.heroHp < 1) { S.heroHp = Math.min(1, S.heroHp + (dmg * 0.3) / maxHp); }
+      if (M.hp <= 0) onKill();
+    }
+  }
+}
+function renderPetSprites() {
+  const row = $('pet-row'); row.innerHTML = '';
+  for (const P of activePetList()) {
+    const d = document.createElement('div');
+    d.className = 'pet-sprite'; d.id = 'pet-' + P.id; d.textContent = P.icon; d.title = `${P.name} (Lv ${S.pets[P.id].lvl})`;
+    row.appendChild(d);
+  }
+}
 
 /* ------------------------------- items ----------------------------- */
 function rollRarity(luck, minIdx = 0) {
@@ -344,11 +486,14 @@ function tick(dt) {
     if (M.hp <= 0) { onKill(); }
   }
   if (!M) return;
+  petsTick(dt);
+  if (!M) return;
   // monster attacks
   monAtkTimer += dt;
-  if (monAtkTimer >= M.interval) {
-    monAtkTimer -= M.interval;
-    const raw = M.atk * rand(0.85, 1.15);
+  const mInterval = M.interval * (hasSpecial('chill') ? 1.15 : 1);
+  if (monAtkTimer >= mInterval) {
+    monAtkTimer -= mInterval;
+    const raw = M.atk * rand(0.85, 1.15) * (hasSpecial('shield') ? 0.88 : 1);
     const dmg = Math.max(1, Math.round(raw * 100 / (100 + ST.def)));
     S.heroHp -= dmg / maxHp;
     fxDamage('hero', dmg, 'hurt');
@@ -361,7 +506,7 @@ function tick(dt) {
 function onHeroDown() {
   S.heroHp = 0;
   S.stats.deaths++;
-  napTimer = 6;
+  napTimer = hasSpecial('quicknap') ? 3 : 6;
   snd('nap');
   $('nap-overlay').classList.remove('hidden');
   log(`💤 <span class="bad">${esc(M.name)} knocked ${esc(heroName())} over!</span> Nap time… boss progress in this zone resets.`, 'bad');
@@ -393,10 +538,12 @@ function onKill() {
     for (let i = 0; i < 2; i++) receiveItem(makeItem(zi, 1));
     if (Math.random() < 0.65 * dropBoost) receiveCollectable(rollCollectable(zi, true));
     if (Math.random() < 0.10 * dropBoost) receiveCollectable(rollGlobalCollectable());
+    if (Math.random() < 0.25 * dropBoost) gainEgg(1, `${esc(m.name)} was guarding it.`);
   } else {
     if (Math.random() < 0.33 * dropBoost) receiveItem(makeItem(zi));
     if (Math.random() < 0.12 * dropBoost) receiveCollectable(rollCollectable(zi, false));
     if (Math.random() < 0.035 * dropBoost) receiveCollectable(rollGlobalCollectable());
+    if (Math.random() < 0.012 * dropBoost) gainEgg(1);
   }
   // zone progress
   if (m.boss) {
@@ -419,6 +566,7 @@ function onKill() {
 
 function addXp(amount) {
   S.xp += amount;
+  for (const id of S.activePets) addPetXp(id, Math.max(1, Math.round(amount * 0.3)));
   let leveled = false;
   while (S.xp >= xpNeeded(S.level)) {
     S.xp -= xpNeeded(S.level);
@@ -568,7 +716,7 @@ function doPrestige() {
   const gain = prestigeGain();
   if (gain <= 0) return;
   if (!confirm(`Tidy up now and earn ${gain} ⭐ Gold Stars?\n\nYou will lose: level, gold, bag, equipment, upgrades and zone progress.\nYou keep: Toy Box collection, achievements, stars.`)) return;
-  const keep = { stars: S.stars + gain, collection: S.collection, newColl: S.newColl, achievements: S.achievements, autosell: S.autosell, autoEquip: S.autoEquip, opts: S.opts, stats: S.stats, heroSkin: S.heroSkin };
+  const keep = { stars: S.stars + gain, collection: S.collection, newColl: S.newColl, achievements: S.achievements, autosell: S.autosell, autoEquip: S.autoEquip, opts: S.opts, stats: S.stats, heroSkin: S.heroSkin, pets: S.pets, activePets: S.activePets, eggs: S.eggs, flags: S.flags };
   S = Object.assign(defaultState(), keep);
   S.stats.prestiges++;
   ST = computeStats();
@@ -600,13 +748,13 @@ function checkAchievements() {
 
 /* ------------------------------ daily gift ------------------------- */
 const DAILY_DAYS = [
-  { icon: '🪙', label: 'Gold + Uncommon item',        goldMult: 1,   items: [1],       toys: 0, star: 0 },
-  { icon: '🧸', label: 'Gold + a collectable',        goldMult: 1.2, items: [],        toys: 1, star: 0 },
-  { icon: '💙', label: 'Gold + Rare item',            goldMult: 1.5, items: [2],       toys: 0, star: 0 },
-  { icon: '🧸', label: 'Gold + 2 collectables',       goldMult: 1.8, items: [],        toys: 2, star: 0 },
-  { icon: '💜', label: 'Gold + Epic item',            goldMult: 2.2, items: [3],       toys: 0, star: 0 },
-  { icon: '🎁', label: 'Gold + 2 Rare + collectable', goldMult: 2.6, items: [2, 2],    toys: 1, star: 0 },
-  { icon: '⭐', label: 'Legendary item + Gold Star!', goldMult: 4,   items: [4],       toys: 1, star: 1 },
+  { icon: '🪙', label: 'Gold + Uncommon item',            goldMult: 1,   items: [1],    toys: 0, eggs: 0, star: 0 },
+  { icon: '🥚', label: 'Gold + collectable + Pet Egg',    goldMult: 1.2, items: [],     toys: 1, eggs: 1, star: 0 },
+  { icon: '💙', label: 'Gold + Rare item',                goldMult: 1.5, items: [2],    toys: 0, eggs: 0, star: 0 },
+  { icon: '🥚', label: 'Gold + 2 collectables + Pet Egg', goldMult: 1.8, items: [],     toys: 2, eggs: 1, star: 0 },
+  { icon: '💜', label: 'Gold + Epic item',                goldMult: 2.2, items: [3],    toys: 0, eggs: 0, star: 0 },
+  { icon: '🎁', label: 'Gold + 2 Rare + collectable',     goldMult: 2.6, items: [2, 2], toys: 1, eggs: 0, star: 0 },
+  { icon: '⭐', label: 'Legendary + Pet Egg + Gold Star!', goldMult: 4,   items: [4],    toys: 1, eggs: 1, star: 1 },
 ];
 function localDateStr(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 function dailyInfo() {
@@ -631,6 +779,7 @@ function claimDaily() {
   const items = [], toys = [];
   for (const minR of D.items) { const it = makeItem(S.zone, minR); items.push(it); receiveItem(it); }
   for (let i = 0; i < D.toys; i++) { const c = Math.random() < 0.25 ? rollGlobalCollectable() : rollCollectable(randInt(0, S.unlockedZones - 1), true); toys.push(c); receiveCollectable(c); }
+  if (D.eggs) { quiet = true; gainEgg(D.eggs, 'It came with your daily gift.'); quiet = false; }
   if (D.star) { S.stars += D.star; ST = computeStats(); }
   S.daily.last = info.today; S.daily.streak = info.streak; S.daily.total = (S.daily.total || 0) + 1;
   S.daily.bestStreak = Math.max(S.daily.bestStreak || 0, info.streak);
@@ -675,7 +824,7 @@ function openDailyModal() {
     const itemHtml = r.items.map(it => `<li>🎁 <span style="color:var(--r-${RARITIES[it.rarity].id});font-weight:700">${it.icon} ${esc(it.name)}</span></li>`).join('');
     const toyHtml = r.toys.map(c => `<li>🧸 ${c.icon} ${esc(c.name)}${S.collection[c.id] > 1 ? ` (×${S.collection[c.id]})` : ' <b>NEW!</b>'}</li>`).join('');
     showModal(`<div class="levelup-burst">🎉</div><h2>Day ${r.info.day} gift opened!</h2>
-      <ul><li>🪙 <b>${fmt(r.gold)}</b> gold</li>${itemHtml}${toyHtml}${r.D.star ? '<li>⭐ <b>+1 Gold Star</b> (+5% to everything, forever)</li>' : ''}</ul>
+      <ul><li>🪙 <b>${fmt(r.gold)}</b> gold</li>${itemHtml}${toyHtml}${r.D.eggs ? `<li>🥚 <b>${r.D.eggs} Pet Egg</b> — hatch it in the Pets tab</li>` : ''}${r.D.star ? '<li>⭐ <b>+1 Gold Star</b> (+5% to everything, forever)</li>' : ''}</ul>
       ${dailyCalendarHtml(dailyInfo())}
       <p class="hint">Streak: <b>${r.info.streak}</b> day${r.info.streak === 1 ? '' : 's'}. See you tomorrow!</p>`);
     renderDailyButton();
@@ -696,7 +845,7 @@ function simulateAway(seconds) {
   if (t < 30) return null;
   const zi = S.zone;
   const avg = zoneMonsterStats(zi, 5, false);
-  const dps = ST.atk * ST.speed * (1 + (ST.crit / 100) * (ST.critMult - 1));
+  const dps = ST.atk * ST.speed * (1 + (ST.crit / 100) * (ST.critMult - 1)) + totalPetDps();
   const timePerKill = avg.hp / Math.max(1, dps) + 0.5;
   // sustainability: damage taken per kill vs heal per kill
   const dmgTaken = (avg.atk * 100 / (100 + ST.def)) * (timePerKill / 1.4);
@@ -716,10 +865,12 @@ function simulateAway(seconds) {
   for (let i = 0; i < nItems; i++) { const it = makeItem(zi); items.push(it); receiveItem(it); }
   const nToys = Math.min(12, Math.floor(kills * 0.12 * (1 + ST.luck / 200)));
   for (let i = 0; i < nToys; i++) { const c = rollCollectable(zi, false); toys.push(c); receiveCollectable(c); }
+  const eggs = Math.min(3, Math.floor(kills * 0.012 * (1 + ST.luck / 200)));
+  if (eggs) gainEgg(eggs, 'Your pets kept them warm while you were away.');
   quiet = false;
   checkAchievements();
   ui.all();
-  return { t, kills, gold, xp, items, toys, levels: S.level - lvlBefore, efficiency };
+  return { t, kills, gold, xp, items, toys, eggs, levels: S.level - lvlBefore, efficiency };
 }
 function showAwayModal(r) {
   if (!r || r.kills <= 0) return;
@@ -735,6 +886,7 @@ function showAwayModal(r) {
       <li>📚 Gained <b>${fmt(r.xp)}</b> XP${r.levels ? ` (<b>+${r.levels}</b> levels!)` : ''}</li>
       <li>🎁 Found <b>${r.items.length}</b> items${best ? ` — best: <span style="color:var(--r-${RARITIES[best.rarity].id});font-weight:700">${esc(best.name)}</span>` : ''}</li>
       <li>🧸 Found <b>${r.toys.length}</b> collectables${newToys.length ? ` (${newToys.map(c => c.icon).join(' ')})` : ''}</li>
+      ${r.eggs ? `<li>🥚 Found <b>${r.eggs}</b> Pet Egg${r.eggs > 1 ? 's' : ''}</li>` : ''}
     </ul>
     <p class="hint">Away-time progress is capped at ${offlineCapHours()} hours. Buy Night Lights at the Workbench to extend it.</p>`);
 }
@@ -763,6 +915,7 @@ function applyLoaded(data) {
   S.opts = Object.assign(def.opts, data.opts || {});
   S.opts.sound = Object.assign(def.opts.sound, (data.opts && data.opts.sound) || {});
   S.daily = Object.assign(def.daily, data.daily || {});
+  S.pets = data.pets || {}; S.activePets = Array.isArray(data.activePets) ? data.activePets.filter(id => S.pets[id]) : []; S.eggs = data.eggs | 0; S.flags = data.flags || {};
   S.upgrades = data.upgrades || {}; S.collection = data.collection || {}; S.newColl = data.newColl || {};
   S.achievements = data.achievements || {}; S.autosell = data.autosell || {}; S.equipment = data.equipment || {};
   S.inventory = Array.isArray(data.inventory) ? data.inventory : [];
@@ -816,7 +969,8 @@ function flash(id, cls) {
 }
 function spritePos(which) {
   const arena = $('arena').getBoundingClientRect();
-  const sp = $(which === 'hero' ? 'hero-sprite' : 'monster-sprite').getBoundingClientRect();
+  const el = $(which === 'hero' ? 'hero-sprite' : which === 'monster' ? 'monster-sprite' : which) || $('hero-sprite');
+  const sp = el.getBoundingClientRect();
   return { x: sp.left - arena.left + sp.width / 2, y: sp.top - arena.top };
 }
 function fxDamage(target, text, cls) {
@@ -871,8 +1025,8 @@ function showModal(html) {
 
 /* -------------------------------- UI ------------------------------- */
 const ui = {
-  heroDirty: true, bagDirty: true, collDirty: true, upgDirty: true, achDirty: true, zoneDirty: true,
-  all() { this.heroDirty = this.bagDirty = this.collDirty = this.upgDirty = this.achDirty = this.zoneDirty = true; renderStatic(); },
+  heroDirty: true, bagDirty: true, collDirty: true, upgDirty: true, achDirty: true, zoneDirty: true, petsDirty: true,
+  all() { this.heroDirty = this.bagDirty = this.collDirty = this.upgDirty = this.achDirty = this.zoneDirty = this.petsDirty = true; renderStatic(); renderPetSprites(); },
 };
 let activeTab = 'hero';
 
@@ -936,6 +1090,7 @@ function renderFrame() {
   if (ui.collDirty && activeTab === 'toybox') { renderCollection(); ui.collDirty = false; }
   if (activeTab === 'workbench') { renderUpgrades(); ui.upgDirty = false; }
   if (ui.achDirty && activeTab === 'stars') { renderAchievements(); ui.achDirty = false; }
+  if (ui.petsDirty) { $('egg-count').textContent = S.eggs; $('egg-count').classList.toggle('hidden', S.eggs === 0); if (activeTab === 'pets') { renderPets(); renderPetSprites(); ui.petsDirty = false; } }
   if (activeTab === 'settings') renderLifetime();
 }
 
@@ -1006,6 +1161,7 @@ function renderHero() {
     <div><span>🪙 Gold find</span><b>+${pct(ST.gold)}</b></div>
     <div><span>📚 XP gain</span><b>+${pct(ST.xp)}</b></div>
     <div><span>🩹 Regen</span><b>${pct(ST.regen * 100)}/s</b></div>
+    <div><span>🐾 Pet damage</span><b>${fmt(totalPetDps())}/s</b></div>
     <div><span>🌟 Global bonus</span><b>×${ST.global.toFixed(2)}</b></div>
     <div><span>⭐ Stars</span><b>${S.stars} (+${S.stars * 5}%)</b></div>
     <div><span>🏅 Achievements</span><b>${ach} (+${ach}%)</b></div>
@@ -1101,6 +1257,50 @@ function renderAchievements() {
   box.appendChild(grid);
 }
 
+function renderPets() {
+  $('pets-eggs').textContent = S.eggs;
+  $('hatch-btn').disabled = S.eggs <= 0;
+  $('pets-active').textContent = `${S.activePets.length}/${maxActivePets()}`;
+  $('pets-owned').textContent = `${Object.keys(S.pets).length}/${PETS.length}`;
+  const g = $('pet-grid'); g.innerHTML = '';
+  const sorted = [...PETS].sort((a, b) => (S.pets[b.id] ? 1 : 0) - (S.pets[a.id] ? 1 : 0) || a.rarity - b.rarity);
+  for (const P of sorted) {
+    const pd = S.pets[P.id], R = RARITIES[P.rarity], active = S.activePets.includes(P.id);
+    const d = document.createElement('div');
+    d.className = `pet-card rc-${R.id} ${pd ? '' : 'locked'} ${active ? 'active' : ''}`;
+    const passives = Object.entries(P.passive).map(([k, v]) => `${STAT_LABEL[k]} +${pct(v * (pd ? 1 + 0.05 * (pd.lvl - 1) : 1))}`).join(' · ');
+    if (pd) {
+      const need = petXpNeeded(pd.lvl);
+      d.innerHTML = `<div class="pc-ico">${P.icon}</div>
+        <div class="pc-body">
+          <div class="pc-name">${esc(P.name)} <small>Lv ${pd.lvl}</small> <span class="pc-rar" style="color:var(--r-${R.id})">${R.name}</span></div>
+          <div class="pc-desc">${esc(P.desc)}${P.special ? ` · ${SPECIAL_LABEL[P.special]}` : ''}</div>
+          <div class="pc-stats">⚔️ ${fmt(petDamage(P))} every ${petInterval(P).toFixed(1)}s (${fmt(petDps(P))}/s)${passives ? ' · ' + passives : ''}</div>
+          <div class="pc-xp"><div style="width:${Math.min(100, pd.xp / need * 100)}%"></div></div>
+          <div class="pc-xpl">XP ${fmt(pd.xp)} / ${fmt(need)}</div>
+        </div>
+        <button class="btn small ${active ? 'yellow' : 'green'}">${active ? 'Rest' : 'Send out'}</button>`;
+      d.querySelector('button').onclick = () => togglePet(P.id);
+    } else {
+      d.innerHTML = `<div class="pc-ico">❓</div><div class="pc-body"><div class="pc-name">??? <span class="pc-rar" style="color:var(--r-${R.id})">${R.name}</span></div><div class="pc-desc">Hatch eggs to find this pet.</div></div>`;
+    }
+    g.appendChild(d);
+  }
+}
+function openHatchModal() {
+  const r = hatchEgg();
+  if (!r) return;
+  const R = RARITIES[r.P.rarity];
+  const pd = S.pets[r.P.id];
+  showModal(`<div class="levelup-burst hatch-pop">${r.P.icon}</div>
+    <h2>${r.isNew ? 'A new friend!' : 'Hatched a twin!'}</h2>
+    <p><span style="color:var(--r-${R.id});font-weight:700">${R.name} ${esc(r.P.name)}</span> ${r.isNew ? 'hatched from the egg!' : `hatched — your ${esc(r.P.name)} is now <b>level ${pd.lvl}</b>.`}</p>
+    <p>${esc(r.P.desc)}${r.P.special ? ` · ${SPECIAL_LABEL[r.P.special]}` : ''}</p>
+    ${r.isNew && S.activePets.includes(r.P.id) ? '<p class="hint">It has joined you in battle.</p>' : ''}
+    ${S.eggs > 0 ? `<button class="btn purple" id="hatch-again">Hatch another (${S.eggs} left) 🥚</button>` : ''}`);
+  const b = $('hatch-again'); if (b) b.onclick = openHatchModal;
+  renderPets();
+}
 function renderLifetime() {
   const s = S.stats;
   $('lifetime-stats').textContent = `Lifetime: ${fmt(s.kills)} toys bonked · ${fmt(s.bosses)} bosses · ${fmt(s.goldEarned)} gold earned · ${fmt(s.itemsFound)} items found · ${fmt(s.itemsSold)} sold · ${s.deaths} naps · ${s.prestiges} tidy-ups · ${timeStr(s.playtime)} played`;
@@ -1140,7 +1340,7 @@ function bind() {
     snd('click');
     document.querySelectorAll('.tab-body').forEach(b => b.classList.add('hidden'));
     $('tab-' + activeTab).classList.remove('hidden');
-    ui.heroDirty = ui.bagDirty = ui.collDirty = ui.upgDirty = ui.achDirty = true;
+    ui.heroDirty = ui.bagDirty = ui.collDirty = ui.upgDirty = ui.achDirty = ui.petsDirty = true;
     hideTooltip(true);
     renderFrame();
   });
@@ -1156,6 +1356,7 @@ function bind() {
   $('opt-muted').onchange = (e) => setMuted(e.target.checked);
   $('mute-btn').onclick = () => setMuted(!S.opts.sound.muted);
   $('daily-btn').onclick = () => { snd('click'); openDailyModal(); };
+  $('hatch-btn').onclick = openHatchModal;
   $('sound-hint').onclick = () => { if (window.ToyAudio) window.ToyAudio.unlock(); $('sound-hint').classList.add('hidden'); };
   document.addEventListener('toyaudio-unlocked', () => { $('sound-hint').classList.add('hidden'); syncAudio(); });
   document.querySelectorAll('[data-autosell]').forEach(cb => cb.onchange = (e) => {
@@ -1240,6 +1441,8 @@ function init() {
   syncAudio();
   ui.all();
   renderDailyButton();
+  renderPetSprites();
+  if (!S.flags.firstEgg) { S.flags.firstEgg = true; if (Object.keys(S.pets).length === 0) gainEgg(1, 'A welcome gift from the toy box!'); }
   if (!dailyInfo().claimedToday) { log('🎁 <span class="good">Your daily gift is ready!</span> Click the gift in the top bar.'); toast('🎁', 'Daily gift ready!', 'Click the gift box in the top bar', 'rc-legendary', true); }
   spawnDelay = 0.3;
   lastTick = Date.now();

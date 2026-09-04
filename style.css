@@ -418,3 +418,31 @@ button, input, textarea { font-family: inherit; }
 .daily-day:nth-child(7) { border-color: var(--purple); }
 .daily-day:nth-child(7).done { border-color: var(--green); }
 @media (max-width: 480px) { .daily-day .dd-num { font-size: .55rem; } .daily-day .dd-ico { font-size: 1.1rem; } }
+
+/* ===== Pets ===== */
+.pet-row { position: absolute; left: -6px; bottom: 58px; display: flex; flex-direction: column; gap: 2px; z-index: 3; }
+.pet-sprite { font-size: 1.7rem; line-height: 1; filter: drop-shadow(0 3px 0 rgba(0,0,0,.25)); animation: bob 1.3s ease-in-out infinite; }
+.pet-sprite:nth-child(2) { animation-delay: .5s; }
+.pet-sprite.lunge { animation: lunge .3s ease-out !important; }
+.dmg.pet { color: #bfe9ff; font-size: 1.05rem; }
+.dmg.crit.pet { color: #ffe08a; font-size: 1.4rem; }
+.pets-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.egg-box { background: var(--cream); border: 3px solid var(--ink); border-radius: 999px; padding: 4px 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.egg-ico { font-size: 1.3rem; display: inline-block; }
+#hatch-btn:not(:disabled) .egg-ico, #hatch-btn:not(:disabled) { animation: giftPulse 1.2s ease-in-out infinite; }
+.pets-meta { margin-left: auto; font-size: .9rem; font-weight: 600; }
+.pet-card { display: grid; grid-template-columns: 52px 1fr auto; gap: 10px; align-items: center; background: white; border: 3px solid var(--rc); border-radius: 14px; padding: 8px 10px; margin-bottom: 8px; box-shadow: 0 3px 0 var(--rc); }
+.pet-card.active { background: #f0fbe6; box-shadow: 0 3px 0 var(--rc), 0 0 0 3px var(--green) inset; }
+.pet-card.locked { background: #eee; border-color: #bbb; box-shadow: none; opacity: .7; }
+.pet-card .pc-ico { font-size: 2.2rem; text-align: center; }
+.pet-card .pc-name { font-weight: 700; }
+.pet-card .pc-name small { color: var(--purple); }
+.pet-card .pc-rar { font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; }
+.pet-card .pc-desc { font-size: .82rem; color: #555; }
+.pet-card .pc-stats { font-size: .78rem; color: #777; margin-top: 2px; }
+.pet-card .pc-xp { height: 8px; background: #eee; border: 2px solid var(--ink); border-radius: 999px; overflow: hidden; margin-top: 4px; }
+.pet-card .pc-xp div { height: 100%; background: var(--blue); }
+.pet-card .pc-xpl { font-size: .7rem; color: #888; }
+.hatch-pop { animation: hatchPop .7s cubic-bezier(.3,1.6,.6,1); }
+@keyframes hatchPop { 0% { transform: scale(0) rotate(-30deg) } 60% { transform: scale(1.3) rotate(8deg) } 100% { transform: scale(1) } }
+@media (max-width: 480px) { .pet-card { grid-template-columns: 44px 1fr; } .pet-card .btn { grid-column: 1 / -1; } }

@@ -163,6 +163,13 @@ const SFX = {
     bell(sfxBus, 1046, t + 0.3, 0.4, 0.14);
   },
   click(t) { tone(sfxBus, 900, t, 0.035, 0.12, 'sine'); },
+  petHit(t) { const p = 0.9 + Math.random() * 0.2; tone(sfxBus, 520 * p, t, 0.07, 0.14, 'triangle', 260); noise(sfxBus, t, 0.04, 0.12, 'bandpass', 2200, 1.5); },
+  petLevel(t) { bell(sfxBus, 1046, t, 0.25, 0.16); bell(sfxBus, 1568, t + 0.1, 0.4, 0.16); },
+  hatch(t) {
+    noise(sfxBus, t, 0.05, 0.3, 'highpass', 2500); noise(sfxBus, t + 0.12, 0.05, 0.3, 'highpass', 2000); noise(sfxBus, t + 0.28, 0.08, 0.35, 'bandpass', 1500, 1.5);
+    for (let i = 0; i < 7; i++) bell(sfxBus, midi(84 + PENTA[i]), t + 0.4 + i * 0.07, 0.5, 0.16);
+    tone(sfxBus, 400, t + 0.45, 0.35, 0.15, 'triangle', 800);
+  },
   deny(t) { tone(sfxBus, 180, t, 0.09, 0.15, 'square'); tone(sfxBus, 150, t + 0.11, 0.12, 0.15, 'square'); },
   prestige(t) {
     [60, 64, 67, 72, 76, 79, 84, 88].forEach((m, i) => { bell(sfxBus, midi(m), t + i * 0.09, 0.8, 0.2); tone(sfxBus, midi(m - 12), t + i * 0.09, 0.3, 0.08, 'square'); });
@@ -170,7 +177,7 @@ const SFX = {
     tone(sfxBus, midi(48), t + 0.7, 1.6, 0.15, 'triangle');
   },
 };
-const MIN_GAP = { hit: 0.05, crit: 0.05, hurt: 0.08, kill: 0.12, coin: 0.12, pickup: 0.1, click: 0.03 };
+const MIN_GAP = { hit: 0.05, crit: 0.05, hurt: 0.08, kill: 0.12, coin: 0.12, pickup: 0.1, click: 0.03, petHit: 0.07 };
 
 function sfx(name, arg) {
   if (!unlocked || !ctx || opts.muted || opts.sfx <= 0) return;
