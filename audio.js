@@ -154,6 +154,14 @@ const SFX = {
     bell(sfxBus, 2200, t + 0.03, 0.15, 0.16);
     bell(sfxBus, 2960, t + 0.09, 0.35, 0.16);
   },
+  craft(t, rarity = 1) {
+    // three hammer taps on the workbench, then a sparkle that grows with rarity
+    for (let i = 0; i < 3; i++) {
+      noise(sfxBus, t + i * 0.11, 0.05, 0.3, 'bandpass', 1800, 3);
+      tone(sfxBus, 520 + i * 60, t + i * 0.11, 0.07, 0.18, 'square', 260);
+    }
+    for (let i = 0; i < 3 + rarity; i++) bell(sfxBus, midi(79 + PENTA[i]), t + 0.36 + i * 0.07, 0.45, 0.14);
+  },
   equip(t) {
     noise(sfxBus, t, 0.05, 0.2, 'bandpass', 2500, 2);
     tone(sfxBus, 660, t + 0.02, 0.12, 0.15, 'triangle', 880);

@@ -194,6 +194,9 @@ const ACHIEVEMENTS = [
   { id: 'prestige1', icon: '🧹', name: 'Tidy Room',        desc: 'Tidy up once',                 check: s => s.stats.prestiges >= 1 },
   { id: 'prestige5', icon: '✨', name: 'Spotless',         desc: 'Tidy up 5 times',              check: s => s.stats.prestiges >= 5 },
   { id: 'sell100',   icon: '🏷️', name: 'Yard Sale',        desc: 'Sell 100 items',               check: s => s.stats.itemsSold >= 100 },
+  { id: 'craft1',    icon: '🔨', name: 'Little Tinkerer',  desc: 'Combine items at the crafting table', check: s => s.stats.itemsCrafted >= 1 },
+  { id: 'craft50',   icon: '🛠️', name: 'Master Tinkerer',  desc: 'Craft 50 items',               check: s => s.stats.itemsCrafted >= 50 },
+  { id: 'craftMyth', icon: '💎', name: 'Handmade Legend',  desc: 'Craft a Mythic item',          check: s => s.stats.bestCrafted >= 5 },
   { id: 'nap10',     icon: '💤', name: 'Sleepyhead',       desc: 'Take 10 naps',                 check: s => s.stats.deaths >= 10 },
   { id: 'time1h',    icon: '⏰', name: 'Playtime',         desc: 'Play for 1 hour',              check: s => s.stats.playtime >= 3600 },
   { id: 'pet1',      icon: '🥚', name: 'It Hatched!',      desc: 'Hatch your first pet',         check: s => Object.keys(s.pets).length >= 1 },
@@ -217,7 +220,7 @@ function defaultState() {
     achievements: {},
     autosell: {}, autoEquip: true,
     opts: { numbers: true, toasts: true, sound: { sfx: 0.6, music: 0.35, muted: false } },
-    stats: { kills: 0, bosses: 0, goldEarned: 0, itemsFound: 0, itemsSold: 0, prestiges: 0, maxLevel: 1, maxZone: 1, playtime: 0, deaths: 0, bestRarity: -1, eggsHatched: 0, petDamage: 0 },
+    stats: { kills: 0, bosses: 0, goldEarned: 0, itemsFound: 0, itemsSold: 0, prestiges: 0, maxLevel: 1, maxZone: 1, playtime: 0, deaths: 0, bestRarity: -1, eggsHatched: 0, petDamage: 0, itemsCrafted: 0, bestCrafted: -1 },
     daily: { last: '', streak: 0, total: 0, bestStreak: 0 },
     pets: {}, activePets: [], eggs: 0, flags: {},
     lastSave: Date.now(),
@@ -381,12 +384,13 @@ function rollRarity(luck, minIdx = 0) {
   return weightedPick(pool, x => x.r.w * (1 + (luck / 100) * x.i * 0.6)).i;
 }
 function itemLevelFor(zoneIdx) { return zoneIdx * 5 + 1 + randInt(0, 4); }
-function makeItem(zoneIdx, minRarity = 0) {
-  const slot = pick(SLOTS);
-  const base = pick(BASES[slot]);
-  const rIdx = rollRarity(ST.luck, minRarity);
+function makeItem(zoneIdx, minRarity = 0, fixed = {}) {
+  // `fixed` lets crafting pin the slot, rarity, item level and base toy
+  const slot = fixed.slot || pick(SLOTS);
+  const base = fixed.base || pick(BASES[slot]);
+  const rIdx = fixed.rarity != null ? fixed.rarity : rollRarity(ST.luck, minRarity);
   const R = RARITIES[rIdx];
-  const ilvl = itemLevelFor(zoneIdx);
+  const ilvl = fixed.ilvl || itemLevelFor(zoneIdx);
   const zm = Math.pow(1.08, zoneIdx); // deep zones drop meaningfully stronger gear
   const v = () => rand(0.85, 1.15) * R.mult * zm;
   const stats = {};
@@ -657,6 +661,76 @@ function sellEquipped(slot) {
   sellItem(it, false, false);
   ST = computeStats();
   ui.heroDirty = true;
+}
+
+/* ------------------------------ crafting --------------------------- */
+const CRAFT_NEED = 3;
+const plural = (label) => label.endsWith('s') ? label : label + 's';
+// Groups the bag by slot + rarity; every group with 3+ items is a recipe.
+// `use` is the three weakest items (the best ones are kept).
+function craftGroups() {
+  const groups = {};
+  for (const it of S.inventory) {
+    if (it.rarity >= RARITIES.length - 1) continue;
+    const key = it.rarity + ':' + it.slot;
+    (groups[key] = groups[key] || []).push(it);
+  }
+  const out = [];
+  for (const key in groups) {
+    const items = groups[key].sort((a, b) => itemScore(a) - itemScore(b));
+    if (items.length < CRAFT_NEED) continue;
+    const [rarity, slot] = key.split(':');
+    out.push({ slot, rarity: +rarity, items, use: items.slice(0, CRAFT_NEED) });
+  }
+  return out.sort((a, b) => b.rarity - a.rarity || SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot));
+}
+function sameBaseOf(items) {
+  return items.every(it => it.icon === items[0].icon) ? BASES[items[0].slot].find(b => b[1] === items[0].icon) || null : null;
+}
+function craftItems(use, silent) {
+  if (use.length < CRAFT_NEED || use[0].rarity >= RARITIES.length - 1) return null;
+  if (use.some(it => !S.inventory.some(x => x.id === it.id))) return null;
+  const slot = use[0].slot, rarity = use[0].rarity + 1;
+  for (const it of use) S.inventory.splice(S.inventory.findIndex(x => x.id === it.id), 1);
+  const ilvl = Math.max(...use.map(it => it.ilvl));
+  const base = sameBaseOf(use);
+  const it = makeItem(Math.floor((ilvl - 1) / 5), 0, { slot, rarity, ilvl, base });
+  const R = RARITIES[rarity];
+  S.stats.itemsCrafted++;
+  if (rarity > S.stats.bestCrafted) S.stats.bestCrafted = rarity;
+  if (rarity > S.stats.bestRarity) S.stats.bestRarity = rarity;
+  log(`🔨 Combined ${CRAFT_NEED} ${RARITIES[rarity - 1].name} ${plural(SLOT_LABEL[slot])} into <span class="r-${R.id}">${esc(it.name)}</span>${base ? ' (matching set!)' : ''}.`);
+  if (S.autoEquip && itemScore(it) > itemScore(S.equipment[slot])) {
+    const old = S.equipment[slot];
+    S.equipment[slot] = it;
+    ST = computeStats();
+    ui.heroDirty = true;
+    log(`🧷 Equipped <span class="r-${R.id}">${esc(it.name)}</span>${old ? ` (replacing ${esc(old.name)})` : ''}.`);
+    if (old) stashItem(old, true);
+  } else {
+    S.inventory.push(it); // bag has room: three went in, one comes out
+  }
+  if (!silent) {
+    snd('craft', rarity);
+    toast(it.icon, it.name, `Crafted ${R.name} ${SLOT_LABEL[slot]} · Lv ${it.ilvl}`, 'rc-' + R.id, rarity >= 4);
+  }
+  ui.bagDirty = true;
+  checkAchievements();
+  return it;
+}
+function craftAll() {
+  let n = 0, best = null;
+  for (let guard = 0; guard < 500; guard++) {
+    const groups = craftGroups();
+    if (!groups.length) break;
+    const it = craftItems(groups[0].use, true);
+    if (!it) break;
+    n++;
+    if (!best || it.rarity > best.rarity || (it.rarity === best.rarity && itemScore(it) > itemScore(best))) best = it;
+  }
+  if (!n) return;
+  snd('craft', best.rarity);
+  toast('🔨', `Combined ${n} time${n > 1 ? 's' : ''}!`, `Best: ${best.name}`, 'rc-' + RARITIES[best.rarity].id, best.rarity >= 4);
 }
 
 /* ---------------------------- collectables ------------------------- */
@@ -1169,9 +1243,43 @@ function renderHero() {
     <div><span>🏆 Sets complete</span><b>${sets} (+${sets * 4}% atk/hp)</b></div>`;
 }
 
+function renderCrafting() {
+  const box = $('craft-list'); box.innerHTML = '';
+  const groups = craftGroups();
+  $('craft-all').disabled = !groups.length;
+  $('craft-count').textContent = groups.length ? `${groups.length} recipe${groups.length > 1 ? 's' : ''} ready` : '';
+  if (!groups.length) {
+    box.innerHTML = `<div class="craft-empty">Nothing to combine yet. Collect ${CRAFT_NEED} items with the same slot and rarity.</div>`;
+    return;
+  }
+  for (const g of groups) {
+    const R = RARITIES[g.rarity], R2 = RARITIES[g.rarity + 1];
+    const base = sameBaseOf(g.use);
+    const lvl = Math.max(...g.use.map(it => it.ilvl));
+    const d = document.createElement('div'); d.className = 'craft-row';
+    d.innerHTML = `<div class="craft-in"></div>
+      <span class="craft-arrow">➜</span>
+      <div class="craft-out rc-${R2.id}"><span class="mini">${base ? base[1] : '❓'}</span>
+        <div><b style="color:var(--r-${R2.id})">${R2.name} ${SLOT_LABEL[g.slot]}</b><small>Lv ${lvl}${base ? ' · matching set!' : ''} · ${g.items.length} ${R.name} in bag</small></div></div>
+      <button class="btn small purple">Combine</button>`;
+    const inBox = d.querySelector('.craft-in');
+    for (const it of g.use) {
+      const m = document.createElement('span');
+      m.className = `mini rc-${R.id}`; m.textContent = it.icon;
+      m.onmouseenter = (e) => showTooltip(e, itemTooltipHtml(it, S.equipment[it.slot]), R.id);
+      m.onmousemove = moveTooltip;
+      m.onmouseleave = hideTooltip;
+      inBox.appendChild(m);
+    }
+    d.querySelector('button').onclick = () => { hideTooltip(true); craftItems(g.use, false); renderFrame(); };
+    box.appendChild(d);
+  }
+}
+
 function renderBag() {
   $('bag-used').textContent = S.inventory.length;
   $('bag-max').textContent = bagMax();
+  renderCrafting();
   const g = $('inv-grid'); g.innerHTML = '';
   const sorted = [...S.inventory].sort((a, b) => b.rarity - a.rarity || itemScore(b) - itemScore(a));
   for (const it of sorted) {
@@ -1303,7 +1411,7 @@ function openHatchModal() {
 }
 function renderLifetime() {
   const s = S.stats;
-  $('lifetime-stats').textContent = `Lifetime: ${fmt(s.kills)} toys bonked · ${fmt(s.bosses)} bosses · ${fmt(s.goldEarned)} gold earned · ${fmt(s.itemsFound)} items found · ${fmt(s.itemsSold)} sold · ${s.deaths} naps · ${s.prestiges} tidy-ups · ${timeStr(s.playtime)} played`;
+  $('lifetime-stats').textContent = `Lifetime: ${fmt(s.kills)} toys bonked · ${fmt(s.bosses)} bosses · ${fmt(s.goldEarned)} gold earned · ${fmt(s.itemsFound)} items found · ${fmt(s.itemsSold)} sold · ${fmt(s.itemsCrafted)} crafted · ${s.deaths} naps · ${s.prestiges} tidy-ups · ${timeStr(s.playtime)} played`;
 }
 
 /* tooltip */
@@ -1380,6 +1488,7 @@ function bind() {
     [...S.inventory].forEach(it => { g += it.sell; sellItem(it, true, true); });
     log(`🏷️ Sold ${n} items for 🪙${fmt(g)}.`);
   };
+  $('craft-all').onclick = () => { hideTooltip(true); craftAll(); renderFrame(); };
   $('prestige-btn').onclick = doPrestige;
   $('save-now').onclick = () => { save(); toast('💾', 'Saved!', '', 'rc-uncommon'); };
   $('export-save').onclick = exportSave;

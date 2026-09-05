@@ -277,6 +277,24 @@ button, input, textarea { font-family: inherit; }
 .bag-cap { font-weight: 700; margin-right: auto; }
 .autosell { display: flex; gap: 12px; flex-wrap: wrap; font-size: .9rem; margin-bottom: 10px; align-items: center; }
 .autosell label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.craft-box { background: #fff7e0; border: 3px solid var(--ink); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; }
+.craft-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.craft-head h3 { margin: 0; font-size: 1.05rem; }
+.craft-head small { color: #777; font-weight: 500; font-size: .8rem; }
+.craft-box .hint { margin: 4px 0 8px; }
+.craft-empty { color: #777; font-size: .9rem; font-style: italic; }
+.craft-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 0; border-top: 2px dashed #e6d9b8; }
+.craft-row:first-child { border-top: 0; }
+.craft-in { display: flex; gap: 4px; }
+.mini {
+  width: 34px; height: 34px; flex: none; display: grid; place-items: center; cursor: default;
+  background: white; border: 2px solid var(--rc); border-radius: 9px; font-size: 1.15rem; box-shadow: 0 2px 0 var(--rc);
+}
+.craft-arrow { font-weight: 700; color: #999; }
+.craft-out { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 150px; }
+.craft-out b { font-size: .9rem; }
+.craft-out small { display: block; color: #777; font-size: .75rem; }
+.craft-row .btn { margin-left: auto; }
 .inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
 .item {
   position: relative; aspect-ratio: 1; display: grid; place-items: center;
