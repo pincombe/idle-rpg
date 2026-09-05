@@ -197,6 +197,7 @@ const ACHIEVEMENTS = [
   { id: 'craft1',    icon: '🔨', name: 'Little Tinkerer',  desc: 'Combine items at the crafting table', check: s => s.stats.itemsCrafted >= 1 },
   { id: 'craft50',   icon: '🛠️', name: 'Master Tinkerer',  desc: 'Craft 50 items',               check: s => s.stats.itemsCrafted >= 50 },
   { id: 'craftMyth', icon: '💎', name: 'Handmade Legend',  desc: 'Craft a Mythic item',          check: s => s.stats.bestCrafted >= 5 },
+  { id: 'craftGold', icon: '💸', name: 'Big Spender',      desc: 'Spend 10,000 gold on crafting', check: s => s.stats.goldCrafted >= 1e4 },
   { id: 'nap10',     icon: '💤', name: 'Sleepyhead',       desc: 'Take 10 naps',                 check: s => s.stats.deaths >= 10 },
   { id: 'time1h',    icon: '⏰', name: 'Playtime',         desc: 'Play for 1 hour',              check: s => s.stats.playtime >= 3600 },
   { id: 'pet1',      icon: '🥚', name: 'It Hatched!',      desc: 'Hatch your first pet',         check: s => Object.keys(s.pets).length >= 1 },
@@ -220,7 +221,7 @@ function defaultState() {
     achievements: {},
     autosell: {}, autoEquip: true,
     opts: { numbers: true, toasts: true, sound: { sfx: 0.6, music: 0.35, muted: false } },
-    stats: { kills: 0, bosses: 0, goldEarned: 0, itemsFound: 0, itemsSold: 0, prestiges: 0, maxLevel: 1, maxZone: 1, playtime: 0, deaths: 0, bestRarity: -1, eggsHatched: 0, petDamage: 0, itemsCrafted: 0, bestCrafted: -1 },
+    stats: { kills: 0, bosses: 0, goldEarned: 0, itemsFound: 0, itemsSold: 0, prestiges: 0, maxLevel: 1, maxZone: 1, playtime: 0, deaths: 0, bestRarity: -1, eggsHatched: 0, petDamage: 0, itemsCrafted: 0, bestCrafted: -1, goldCrafted: 0 },
     daily: { last: '', streak: 0, total: 0, bestStreak: 0 },
     pets: {}, activePets: [], eggs: 0, flags: {},
     lastSave: Date.now(),
@@ -704,7 +705,7 @@ function craftItems(use, silent) {
     if (!silent) toast('🪙', 'Not enough gold!', `Crafting this costs 🪙${fmt(cost)}`, 'rc-common');
     return null;
   }
-  S.gold -= cost;
+  S.gold -= cost; S.stats.goldCrafted += cost;
   for (const it of use) S.inventory.splice(S.inventory.findIndex(x => x.id === it.id), 1);
   const base = sameBaseOf(use);
   const it = makeItem(Math.floor((ilvl - 1) / 5), 0, { slot, rarity, ilvl, base });
@@ -1437,7 +1438,7 @@ function openHatchModal() {
 }
 function renderLifetime() {
   const s = S.stats;
-  $('lifetime-stats').textContent = `Lifetime: ${fmt(s.kills)} toys bonked · ${fmt(s.bosses)} bosses · ${fmt(s.goldEarned)} gold earned · ${fmt(s.itemsFound)} items found · ${fmt(s.itemsSold)} sold · ${fmt(s.itemsCrafted)} crafted · ${s.deaths} naps · ${s.prestiges} tidy-ups · ${timeStr(s.playtime)} played`;
+  $('lifetime-stats').textContent = `Lifetime: ${fmt(s.kills)} toys bonked · ${fmt(s.bosses)} bosses · ${fmt(s.goldEarned)} gold earned · ${fmt(s.itemsFound)} items found · ${fmt(s.itemsSold)} sold · ${fmt(s.itemsCrafted)} crafted (🪙${fmt(s.goldCrafted)} spent) · ${s.deaths} naps · ${s.prestiges} tidy-ups · ${timeStr(s.playtime)} played`;
 }
 
 /* tooltip */
