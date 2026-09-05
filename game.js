@@ -666,6 +666,13 @@ function sellEquipped(slot) {
 /* ------------------------------ crafting --------------------------- */
 const CRAFT_NEED = 3;
 const plural = (label) => label.endsWith('s') ? label : label + 's';
+// Gold cost to craft an item of a given rarity: free up to Uncommon, then a
+// multiple of the result's sell value so it keeps pace with deeper zones.
+const CRAFT_COST_MULT = [0, 0, 2, 3, 5, 8];
+function craftCost(targetRarity, ilvl) {
+  return Math.round((2 + ilvl * 1.5) * RARITIES[targetRarity].sell * CRAFT_COST_MULT[targetRarity]);
+}
+function craftGroupCost(g) { return craftCost(g.rarity + 1, Math.max(...g.use.map(it => it.ilvl))); }
 // Groups the bag by slot + rarity; every group with 3+ items is a recipe.
 // `use` is the three weakest items (the best ones are kept).
 function craftGroups() {
@@ -691,15 +698,21 @@ function craftItems(use, silent) {
   if (use.length < CRAFT_NEED || use[0].rarity >= RARITIES.length - 1) return null;
   if (use.some(it => !S.inventory.some(x => x.id === it.id))) return null;
   const slot = use[0].slot, rarity = use[0].rarity + 1;
-  for (const it of use) S.inventory.splice(S.inventory.findIndex(x => x.id === it.id), 1);
   const ilvl = Math.max(...use.map(it => it.ilvl));
+  const cost = craftCost(rarity, ilvl);
+  if (S.gold < cost) {
+    if (!silent) toast('🪙', 'Not enough gold!', `Crafting this costs 🪙${fmt(cost)}`, 'rc-common');
+    return null;
+  }
+  S.gold -= cost;
+  for (const it of use) S.inventory.splice(S.inventory.findIndex(x => x.id === it.id), 1);
   const base = sameBaseOf(use);
   const it = makeItem(Math.floor((ilvl - 1) / 5), 0, { slot, rarity, ilvl, base });
   const R = RARITIES[rarity];
   S.stats.itemsCrafted++;
   if (rarity > S.stats.bestCrafted) S.stats.bestCrafted = rarity;
   if (rarity > S.stats.bestRarity) S.stats.bestRarity = rarity;
-  log(`🔨 Combined ${CRAFT_NEED} ${RARITIES[rarity - 1].name} ${plural(SLOT_LABEL[slot])} into <span class="r-${R.id}">${esc(it.name)}</span>${base ? ' (matching set!)' : ''}.`);
+  log(`🔨 Combined ${CRAFT_NEED} ${RARITIES[rarity - 1].name} ${plural(SLOT_LABEL[slot])} into <span class="r-${R.id}">${esc(it.name)}</span>${base ? ' (matching set!)' : ''}${cost ? ` for 🪙${fmt(cost)}` : ''}.`);
   if (S.autoEquip && itemScore(it) > itemScore(S.equipment[slot])) {
     const old = S.equipment[slot];
     S.equipment[slot] = it;
@@ -719,18 +732,19 @@ function craftItems(use, silent) {
   return it;
 }
 function craftAll() {
-  let n = 0, best = null;
+  let n = 0, best = null, spent = 0;
   for (let guard = 0; guard < 500; guard++) {
-    const groups = craftGroups();
-    if (!groups.length) break;
-    const it = craftItems(groups[0].use, true);
+    const g = craftGroups().find(x => S.gold >= craftGroupCost(x));
+    if (!g) break;
+    const cost = craftGroupCost(g);
+    const it = craftItems(g.use, true);
     if (!it) break;
-    n++;
+    n++; spent += cost;
     if (!best || it.rarity > best.rarity || (it.rarity === best.rarity && itemScore(it) > itemScore(best))) best = it;
   }
-  if (!n) return;
+  if (!n) { toast('🪙', 'Nothing you can afford to combine', '', 'rc-common'); return; }
   snd('craft', best.rarity);
-  toast('🔨', `Combined ${n} time${n > 1 ? 's' : ''}!`, `Best: ${best.name}`, 'rc-' + RARITIES[best.rarity].id, best.rarity >= 4);
+  toast('🔨', `Combined ${n} time${n > 1 ? 's' : ''}!`, `Best: ${best.name}${spent ? ` · spent 🪙${fmt(spent)}` : ''}`, 'rc-' + RARITIES[best.rarity].id, best.rarity >= 4);
 }
 
 /* ---------------------------- collectables ------------------------- */
@@ -1161,6 +1175,7 @@ function renderFrame() {
   if (ui.zoneDirty) { renderZone(); ui.zoneDirty = false; }
   if (ui.heroDirty && activeTab === 'hero') { renderHero(); ui.heroDirty = false; }
   if (ui.bagDirty && activeTab === 'bag') { renderBag(); ui.bagDirty = false; }
+  else if (activeTab === 'bag') refreshCraftButtons();
   if (ui.collDirty && activeTab === 'toybox') { renderCollection(); ui.collDirty = false; }
   if (activeTab === 'workbench') { renderUpgrades(); ui.upgDirty = false; }
   if (ui.achDirty && activeTab === 'stars') { renderAchievements(); ui.achDirty = false; }
@@ -1246,7 +1261,6 @@ function renderHero() {
 function renderCrafting() {
   const box = $('craft-list'); box.innerHTML = '';
   const groups = craftGroups();
-  $('craft-all').disabled = !groups.length;
   $('craft-count').textContent = groups.length ? `${groups.length} recipe${groups.length > 1 ? 's' : ''} ready` : '';
   if (!groups.length) {
     box.innerHTML = `<div class="craft-empty">Nothing to combine yet. Collect ${CRAFT_NEED} items with the same slot and rarity.</div>`;
@@ -1261,7 +1275,7 @@ function renderCrafting() {
       <span class="craft-arrow">➜</span>
       <div class="craft-out rc-${R2.id}"><span class="mini">${base ? base[1] : '❓'}</span>
         <div><b style="color:var(--r-${R2.id})">${R2.name} ${SLOT_LABEL[g.slot]}</b><small>Lv ${lvl}${base ? ' · matching set!' : ''} · ${g.items.length} ${R.name} in bag</small></div></div>
-      <button class="btn small purple">Combine</button>`;
+      <button class="btn small purple" data-cost="${craftGroupCost(g)}"></button>`;
     const inBox = d.querySelector('.craft-in');
     for (const it of g.use) {
       const m = document.createElement('span');
@@ -1274,6 +1288,18 @@ function renderCrafting() {
     d.querySelector('button').onclick = () => { hideTooltip(true); craftItems(g.use, false); renderFrame(); };
     box.appendChild(d);
   }
+  refreshCraftButtons();
+}
+// Gold changes every kill, so button labels and affordability update each frame.
+function refreshCraftButtons() {
+  let any = false;
+  for (const b of $('craft-list').querySelectorAll('button[data-cost]')) {
+    const cost = +b.dataset.cost, ok = S.gold >= cost;
+    b.textContent = cost ? `Combine 🪙${fmt(cost)}` : 'Combine · free';
+    b.disabled = !ok;
+    if (ok) any = true;
+  }
+  $('craft-all').disabled = !any;
 }
 
 function renderBag() {

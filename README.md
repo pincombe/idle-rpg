@@ -8,7 +8,7 @@ An idle RPG set inside a toy box. Your hero fights automatically, showers you wi
 
 - **Auto-battling hero** across 20 toy-themed zones, each with four monsters and a boss.
 - **Tons of loot**: six equipment slots, six rarity tiers (Common → Mythic), randomly generated names and affixes, auto-equip and auto-sell.
-- **Crafting table**: combine three items of the same slot and rarity into one item of the next rarity up. The weakest three are used, the result keeps the highest item level, and three of the same toy make a matching upgrade. "Combine everything" chains through the whole bag.
+- **Crafting table**: combine three items of the same slot and rarity into one item of the next rarity up. The weakest three are used, the result keeps the highest item level, and three of the same toy make a matching upgrade. Crafting Rare or better costs gold that scales with the result's level. "Combine everything" chains through the whole bag, skipping anything you can't afford.
 - **184 collectables** across 22 sets: figurines for every monster and boss, zone toys, a marble jar and a sticker album. Every toy and completed set gives permanent bonuses.
 - **Workbench upgrades**, **achievements**, and a **Tidy Up** prestige system that awards Gold Stars.
 - **Automatic saving** to your browser's local storage every few seconds, plus export/import save codes.
